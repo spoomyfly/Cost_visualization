@@ -8,12 +8,35 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
     type: ''
   });
 
+  // Helper to format Date object to DD.MM.YY
+  const formatDateToDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}.${month}.${year}`;
+  };
+
+  // Helper to format DD.MM.YY to YYYY-MM-DD for input[type="date"]
+  const formatDateToInput = (displayDate) => {
+    if (!displayDate) return new Date().toISOString().split('T')[0];
+    const parts = displayDate.split('.');
+    if (parts.length !== 3) return '';
+    const [day, month, year] = parts;
+    return `20${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     if (editingTransaction) {
-      setFormData(editingTransaction);
+      setFormData({
+        ...editingTransaction,
+        date: formatDateToInput(editingTransaction.date)
+      });
     } else {
       setFormData({
-        date: new Date().toLocaleDateString('ru-RU'), // Default to today, formatted roughly
+        date: new Date().toISOString().split('T')[0],
         name: '',
         amount: '',
         type: ''
@@ -31,14 +54,17 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     onSave({
-      ...formData,
-      amount: parseFloat(formData.amount) || 0
+      date: formatDateToDisplay(formData.date),
+      name: formData.name,
+      amount: parseFloat(parseFloat(formData.amount).toFixed(2)) || 0,
+      type: formData.type
     });
-    // Reset form if not editing (or handled by parent)
+
     if (!editingTransaction) {
       setFormData({
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         name: '',
         amount: '',
         type: ''
@@ -50,14 +76,13 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
     <form onSubmit={handleSubmit} className="card animate-fade-in">
       <h2>{editingTransaction ? 'Edit Transaction' : 'Add Transaction'}</h2>
       <div className="form-group">
-        <label htmlFor="date">Date (e.g., 06.12.25)</label>
+        <label htmlFor="date">Date</label>
         <input
-          type="text"
+          type="date"
           id="date"
           name="date"
           value={formData.date}
           onChange={handleChange}
-          placeholder="DD.MM.YY"
           required
         />
       </div>
@@ -74,7 +99,7 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
         />
       </div>
       <div className="form-group">
-        <label htmlFor="amount">Amount</label>
+        <label htmlFor="amount">Amount (zł)</label>
         <input
           type="number"
           id="amount"

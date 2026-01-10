@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 
@@ -6,6 +6,19 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [jsonOutput, setJsonOutput] = useState('');
+  const [rates, setRates] = useState(null);
+
+  useEffect(() => {
+    // Fetch rates for PLN base
+    fetch('https://open.er-api.com/v6/latest/PLN')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setRates(data.rates);
+        }
+      })
+      .catch(err => console.error("Failed to fetch rates:", err));
+  }, []);
 
   const normalizeType = (type) => {
     if (!type) return '';
@@ -76,6 +89,7 @@ function App() {
             transactions={transactions}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            rates={rates}
           />
 
           {transactions.length > 0 && (
