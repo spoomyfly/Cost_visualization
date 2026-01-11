@@ -16,6 +16,17 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **JSON Export**: Generate a clean JSON dataset of your transactions for external processing.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
+## Architecture
+
+- **Frontend**: React + Vite
+- **Styling**: Vanilla CSS (Glassmorphism)
+- **Services**:
+  - `firebase.js`: Firebase initialization.
+  - `dbService.js`: Handles database interactions (saving transactions).
+  - `requestBuilder.js`: Prepares data payloads for API/DB.
+  - `sheetsService.js`: Handles Google Sheets integration.
+- **Config**: `config.js` manages environment variables.
+
 ## Tech Stack
 
 - **Framework**: React 19 + Vite

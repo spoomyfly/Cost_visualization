@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
+import { buildTransactionPayload } from './services/requestBuilder';
+import { saveTransactions } from './services/dbService';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -20,15 +22,7 @@ function App() {
       .catch(err => console.error("Failed to fetch rates:", err));
   }, []);
 
-  const normalizeType = (type) => {
-    if (!type) return '';
-    // Remove special signs (keep only letters and numbers) and uppercase
-    // Using regex to match only alphanumeric characters from any language
-    // \p{L} matches any unicode letter, \p{N} matches any unicode number
-    return type
-      .replace(/[^\p{L}\p{N}]/gu, '')
-      .toUpperCase();
-  };
+
 
   const handleSaveTransaction = (transactionData) => {
     if (editingId) {
@@ -62,11 +56,18 @@ function App() {
   };
 
   const generateJson = () => {
-    const output = transactions.map(({ id, ...t }) => ({
-      ...t,
-      type: normalizeType(t.type)
-    }));
+    const output = buildTransactionPayload(transactions);
     setJsonOutput(JSON.stringify(output, null, 2));
+  };
+
+  const handleSaveToCloud = async () => {
+    try {
+      const payload = buildTransactionPayload(transactions);
+      await saveTransactions(payload);
+      alert('Successfully saved to cloud!');
+    } catch (error) {
+      alert(error.message || 'Failed to save to cloud.');
+    }
   };
 
   const editingTransaction = transactions.find(t => t.id === editingId);
@@ -96,6 +97,9 @@ function App() {
             <div className="card animate-fade-in">
               <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
                 Generate JSON
+              </button>
+              <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
+                Save to Cloud (Firebase)
               </button>
 
               {jsonOutput && (
