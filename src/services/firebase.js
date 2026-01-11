@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import config from '../config';
 
 const firebaseConfig = {
@@ -14,12 +15,14 @@ const firebaseConfig = {
 
 let app;
 let db;
+let auth;
 
 try {
     if (firebaseConfig.apiKey) {
         console.log("Initializing Firebase with config:", firebaseConfig);
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
+        auth = getAuth(app);
         console.log("Firebase initialized, db:", db);
     } else {
         console.warn("Firebase config missing. Save to Cloud will be disabled.");
@@ -28,4 +31,4 @@ try {
     console.error("Error initializing Firebase:", error);
 }
 
-export { db };
+export { db, auth };
