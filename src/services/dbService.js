@@ -1,5 +1,5 @@
 import { db, auth } from './firebase';
-import { ref, set } from 'firebase/database';
+import { ref, set, get } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 
 export const saveTransactions = async (data) => {
@@ -27,6 +27,36 @@ export const saveTransactions = async (data) => {
         return { success: true };
     } catch (error) {
         console.error("Error in saveTransactions:", error);
+        throw error;
+    }
+};
+
+export const fetchTransactions = async () => {
+    if (!db || !auth) {
+        throw new Error("Firebase is not configured. Please check your .env file.");
+    }
+
+    try {
+        let user = auth.currentUser;
+        if (!user) {
+            console.log("Logging in anonymously for fetch...");
+            const userCredential = await signInAnonymously(auth);
+            user = userCredential.user;
+        }
+
+        const uid = user.uid;
+        console.log("Fetching data from:", 'transactions/' + uid);
+
+        const snapshot = await get(ref(db, 'transactions/' + uid));
+        if (snapshot.exists()) {
+            console.log("Data retrieved successfully");
+            return snapshot.val();
+        } else {
+            console.log("No data available");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error in fetchTransactions:", error);
         throw error;
     }
 };

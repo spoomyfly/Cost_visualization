@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
+import ErrorLogWindow from './components/ErrorLogWindow';
+import DataRetrieval from './components/DataRetrieval';
 import { buildTransactionPayload } from './services/requestBuilder';
-import { saveTransactions } from './services/dbService';
+import { saveTransactions, fetchTransactions } from './services/dbService';
+import { validateAndMap } from './services/dataRetrievalService';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [jsonOutput, setJsonOutput] = useState('');
   const [rates, setRates] = useState(null);
+  const [errors, setErrors] = useState([]);
+  const [showPullButton, setShowPullButton] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -20,8 +26,36 @@ function App() {
         }
       })
       .catch(err => console.error("Failed to fetch rates:", err));
+
+    // Initial Data Load
+    loadData();
   }, []);
 
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchTransactions();
+      if (data) {
+        const { validTransactions, errors: validationErrors } = validateAndMap(data);
+        setTransactions(validTransactions);
+        setErrors(validationErrors);
+        setShowPullButton(false);
+      } else {
+        setShowPullButton(true);
+      }
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      // Optionally handle network errors here
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualRetrieve = () => {
+    // For now, this just retries the fetch, acting as the "Pull from Google Sheets" action
+    // In a real scenario, this might trigger a specific cloud function or API call
+    loadData();
+  };
 
 
   const handleSaveTransaction = (transactionData) => {
@@ -36,6 +70,7 @@ function App() {
         { ...transactionData, id: crypto.randomUUID() }
       ]);
     }
+    setShowPullButton(false); // Hide button if user manually adds data
   };
 
   const handleEdit = (transaction) => {
@@ -48,7 +83,13 @@ function App() {
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
-      setTransactions(prev => prev.filter(t => t.id !== id));
+      setTransactions(prev => {
+        const newTransactions = prev.filter(t => t.id !== id);
+        if (newTransactions.length === 0) {
+          setShowPullButton(true);
+        }
+        return newTransactions;
+      });
       if (editingId === id) {
         setEditingId(null);
       }
@@ -76,6 +117,10 @@ function App() {
     <div className="app-container">
       <h1>Cost Visualization</h1>
 
+      {errors.length > 0 && (
+        <ErrorLogWindow errors={errors} onClose={() => setErrors([])} />
+      )}
+
       <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         <div>
           <TransactionForm
@@ -86,41 +131,51 @@ function App() {
         </div>
 
         <div>
-          <TransactionList
-            transactions={transactions}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            rates={rates}
-          />
+          {loading ? (
+            <div className="card animate-fade-in">Loading data...</div>
+          ) : (
+            <>
+              {showPullButton && transactions.length === 0 ? (
+                <DataRetrieval onRetrieve={handleManualRetrieve} />
+              ) : (
+                <TransactionList
+                  transactions={transactions}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  rates={rates}
+                />
+              )}
 
-          {transactions.length > 0 && (
-            <div className="card animate-fade-in">
-              <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
-                Generate JSON
-              </button>
-              <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
-                Save to Cloud (Firebase)
-              </button>
-
-              {jsonOutput && (
-                <div>
-                  <h3>JSON Output</h3>
-                  <pre className="json-output">
-                    {jsonOutput}
-                  </pre>
-                  <button
-                    className="secondary"
-                    onClick={() => {
-                      navigator.clipboard.writeText(jsonOutput);
-                      alert('Copied to clipboard!');
-                    }}
-                    style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
-                  >
-                    Copy to Clipboard
+              {transactions.length > 0 && (
+                <div className="card animate-fade-in">
+                  <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
+                    Generate JSON
                   </button>
+                  <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
+                    Save to Cloud (Firebase)
+                  </button>
+
+                  {jsonOutput && (
+                    <div>
+                      <h3>JSON Output</h3>
+                      <pre className="json-output">
+                        {jsonOutput}
+                      </pre>
+                      <button
+                        className="secondary"
+                        onClick={() => {
+                          navigator.clipboard.writeText(jsonOutput);
+                          alert('Copied to clipboard!');
+                        }}
+                        style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
+                      >
+                        Copy to Clipboard
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
