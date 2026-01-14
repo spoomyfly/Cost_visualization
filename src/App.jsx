@@ -59,6 +59,27 @@ function App() {
     loadData();
   };
 
+  const handleImportJson = (jsonString) => {
+    try {
+      const data = JSON.parse(jsonString);
+      const { validTransactions, errors: validationErrors } = validateAndMap(data);
+
+      if (validTransactions.length > 0) {
+        setTransactions(validTransactions);
+        setErrors(validationErrors);
+        setShowPullButton(false);
+        setNotification({ message: `Successfully imported ${validTransactions.length} transactions!`, type: 'success' });
+      } else {
+        setNotification({ message: 'No valid transactions found in the provided JSON.', type: 'error' });
+        if (validationErrors.length > 0) {
+          setErrors(validationErrors);
+        }
+      }
+    } catch (error) {
+      setNotification({ message: 'Invalid JSON format. Please check your input.', type: 'error' });
+    }
+  };
+
   const uniqueTypes = useMemo(() => {
     const types = transactions.map(t => t.type).filter(Boolean);
     return [...new Set(types)].sort();
@@ -152,7 +173,7 @@ function App() {
           ) : (
             <>
               {showPullButton && transactions.length === 0 ? (
-                <DataRetrieval onRetrieve={handleManualRetrieve} />
+                <DataRetrieval onRetrieve={handleManualRetrieve} onImport={handleImportJson} />
               ) : (
                 <TransactionList
                   transactions={transactions}
