@@ -29,7 +29,7 @@ export const validateAndMap = (data) => {
             // Map to application model (ensure ID exists)
             validTransactions.push({
                 ...item,
-                id: item.id || crypto.randomUUID(),
+                id: item.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).substring(2, 15)),
                 amount: parseFloat(item.amount) // Ensure number
             });
         }

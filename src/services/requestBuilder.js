@@ -4,7 +4,8 @@ export const normalizeType = (type) => {
     // Using regex to match only alphanumeric characters from any language
     // \p{L} matches any unicode letter, \p{N} matches any unicode number
     return type
-        .replace(/[^\p{L}\p{N}]/gu, '')
+        .replace(/[^\w\s]/gi, '') // Remove special characters except alphanumeric and spaces
+        .replace(/\s+/g, '')      // Remove all spaces
         .toUpperCase();
 };
 
