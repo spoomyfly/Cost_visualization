@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
+const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes }) => {
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -120,8 +120,14 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit }) => {
           value={formData.type}
           onChange={handleChange}
           placeholder="e.g., Общее"
+          list="type-suggestions"
           required
         />
+        <datalist id="type-suggestions">
+          {existingTypes && existingTypes.map((type, index) => (
+            <option key={index} value={type} />
+          ))}
+        </datalist>
       </div>
       <div className="actions" style={{ justifyContent: 'flex-end', marginTop: '1rem' }}>
         {editingTransaction && (

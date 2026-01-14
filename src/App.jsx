@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import ErrorLogWindow from './components/ErrorLogWindow';
 import DataRetrieval from './components/DataRetrieval';
+import Notification from './components/Notification';
 import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
@@ -15,6 +16,7 @@ function App() {
   const [errors, setErrors] = useState([]);
   const [showPullButton, setShowPullButton] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -56,6 +58,11 @@ function App() {
     // In a real scenario, this might trigger a specific cloud function or API call
     loadData();
   };
+
+  const uniqueTypes = useMemo(() => {
+    const types = transactions.map(t => t.type).filter(Boolean);
+    return [...new Set(types)].sort();
+  }, [transactions]);
 
 
   const handleSaveTransaction = (transactionData) => {
@@ -105,9 +112,9 @@ function App() {
     try {
       const payload = buildTransactionPayload(transactions);
       await saveTransactions(payload);
-      alert('Successfully saved to cloud!');
+      setNotification({ message: 'Successfully saved to cloud!', type: 'success' });
     } catch (error) {
-      alert(error.message || 'Failed to save to cloud.');
+      setNotification({ message: error.message || 'Failed to save to cloud.', type: 'error' });
     }
   };
 
@@ -116,6 +123,14 @@ function App() {
   return (
     <div className="app-container">
       <h1>Cost Visualization</h1>
+
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
 
       {errors.length > 0 && (
         <ErrorLogWindow errors={errors} onClose={() => setErrors([])} />
@@ -127,6 +142,7 @@ function App() {
             onSave={handleSaveTransaction}
             editingTransaction={editingTransaction}
             onCancelEdit={handleCancelEdit}
+            existingTypes={uniqueTypes}
           />
         </div>
 
@@ -165,7 +181,7 @@ function App() {
                         className="secondary"
                         onClick={() => {
                           navigator.clipboard.writeText(jsonOutput);
-                          alert('Copied to clipboard!');
+                          setNotification({ message: 'Copied to clipboard!', type: 'success' });
                         }}
                         style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
                       >
