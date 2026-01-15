@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const DataRetrieval = ({ onImport }) => {
+    const { t } = useLanguage();
     const [isImporting, setIsImporting] = useState(false);
     const [jsonInput, setJsonInput] = useState('');
 
@@ -13,8 +15,8 @@ const DataRetrieval = ({ onImport }) => {
     if (isImporting) {
         return (
             <div className="card animate-fade-in" style={{ padding: '2rem' }}>
-                <h3>Import JSON</h3>
-                <p>Paste your transaction JSON below:</p>
+                <h3>{t('importJson')}</h3>
+                <p>{t('pasteJson')}</p>
                 <textarea
                     value={jsonInput}
                     onChange={(e) => setJsonInput(e.target.value)}
@@ -33,10 +35,10 @@ const DataRetrieval = ({ onImport }) => {
                 />
                 <div className="actions" style={{ marginTop: '1rem', justifyContent: 'flex-end' }}>
                     <button className="secondary" onClick={() => setIsImporting(false)}>
-                        Cancel
+                        {t('cancel')}
                     </button>
                     <button className="primary" onClick={handleSave}>
-                        Save & Import
+                        {t('saveImport')}
                     </button>
                 </div>
             </div>
@@ -45,11 +47,11 @@ const DataRetrieval = ({ onImport }) => {
 
     return (
         <div className="card animate-fade-in" style={{ textAlign: 'center', padding: '2rem' }}>
-            <h3>No Data Found</h3>
-            <p>Your transaction list is empty. You can import data from a JSON file.</p>
+            <h3>{t('noDataFound')}</h3>
+            <p>{t('noDataDesc')}</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
                 <button onClick={() => setIsImporting(true)} className="secondary">
-                    Import JSON
+                    {t('importJson')}
                 </button>
             </div>
         </div>

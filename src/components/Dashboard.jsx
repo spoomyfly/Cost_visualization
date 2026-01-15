@@ -1,15 +1,17 @@
 import React, { useMemo } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
 const Dashboard = ({ transactions }) => {
+    const { t } = useLanguage();
     if (!transactions || transactions.length === 0) {
         return (
             <div className="dashboard-container animate-fade-in">
                 <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
-                    <h2>No Data Available</h2>
-                    <p style={{ color: '#94a3b8' }}>Add some transactions to see your spending visualizations!</p>
+                    <h2>{t('noDataAvailable')}</h2>
+                    <p style={{ color: '#94a3b8' }}>{t('noDataDesc')}</p>
                 </div>
             </div>
         );
@@ -248,22 +250,22 @@ const Dashboard = ({ transactions }) => {
         <div className="dashboard-container animate-fade-in">
             <div className="summary-stats">
                 <div className="stat-card">
-                    <div className="stat-label">Total Spent</div>
+                    <div className="stat-label">{t('totalExpenses')}</div>
                     <div className="stat-value">{stats.totalSpent.toFixed(0)} PLN</div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-label">Average Check</div>
+                    <div className="stat-label">{t('averageDaily')}</div>
                     <div className="stat-value">{stats.avgCheck.toFixed(0)} PLN</div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-label">Total Items</div>
+                    <div className="stat-label">{t('totalItems')}</div>
                     <div className="stat-value">{stats.totalCount}</div>
                 </div>
             </div>
 
             <div className="dashboard-grid">
                 <div className="card">
-                    <h3>🥧 Distribution by Type</h3>
+                    <h3>🥧 {t('expensesByType')}</h3>
                     {renderPieChart()}
                     <div className="stats-list">
                         {stats.sortedTypes.map((item, i) => (
@@ -274,7 +276,7 @@ const Dashboard = ({ transactions }) => {
                                 </div>
                                 <div className="stat-amount-group">
                                     <div className="stat-item-amount">{item.value.toFixed(0)} PLN</div>
-                                    <div className="stat-item-count">{item.count} items</div>
+                                    <div className="stat-item-count">{item.count} {t('items') || 'items'}</div>
                                 </div>
                             </div>
                         ))}
@@ -282,10 +284,10 @@ const Dashboard = ({ transactions }) => {
                 </div>
 
                 <div className="card">
-                    <h3>📈 Cumulative Growth</h3>
+                    <h3>📈 {t('cumulativeGrowth')}</h3>
                     {renderCumulativeChart()}
 
-                    <h3 style={{ marginTop: '2rem' }}>📅 Daily Expenses</h3>
+                    <h3 style={{ marginTop: '2rem' }}>📅 {t('dailyHeatmap')}</h3>
                     <div className="calendar-grid">
                         {stats.sortedDaily.map((day, i) => (
                             <div
@@ -299,14 +301,14 @@ const Dashboard = ({ transactions }) => {
                         ))}
                     </div>
                     <div className="heatmap-legend">
-                        <span>Low</span>
+                        <span>{t('low')}</span>
                         <div className="legend-gradient"></div>
-                        <span>High</span>
+                        <span>{t('high')}</span>
                     </div>
                 </div>
 
                 <div className="card" style={{ gridColumn: '1 / -1' }}>
-                    <h3>🏆 Top 15 Expenses</h3>
+                    <h3>🏆 {t('topExpenses')}</h3>
                     <div className="top-expenses-list">
                         {stats.topExpenses.map((item, i) => (
                             <div key={i} className="top-expense-item">

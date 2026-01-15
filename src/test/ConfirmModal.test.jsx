@@ -1,6 +1,16 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
 import ConfirmModal from '../components/ConfirmModal';
+import { LanguageProvider } from '../i18n/LanguageContext';
+
+const renderWithLanguage = (ui) => {
+    return render(
+        <LanguageProvider>
+            {ui}
+        </LanguageProvider>
+    );
+};
 
 describe('ConfirmModal Component', () => {
     let onConfirm;
@@ -21,36 +31,36 @@ describe('ConfirmModal Component', () => {
     });
 
     it('renders correctly when open', () => {
-        render(<ConfirmModal {...getProps()} />);
+        renderWithLanguage(<ConfirmModal {...getProps()} />);
 
         expect(screen.getByText('Test Title')).toBeInTheDocument();
         expect(screen.getByText('Test Message')).toBeInTheDocument();
-        expect(screen.getByText('Delete')).toBeInTheDocument();
-        expect(screen.getByText('Cancel')).toBeInTheDocument();
+        expect(screen.getByText('Potwierdź')).toBeInTheDocument();
+        expect(screen.getByText('Anuluj')).toBeInTheDocument();
     });
 
     it('does not render when closed', () => {
-        render(<ConfirmModal {...getProps({ isOpen: false })} />);
+        renderWithLanguage(<ConfirmModal {...getProps({ isOpen: false })} />);
 
         expect(screen.queryByText('Test Title')).not.toBeInTheDocument();
     });
 
     it('calls onConfirm when confirm button is clicked', () => {
-        render(<ConfirmModal {...getProps()} />);
+        renderWithLanguage(<ConfirmModal {...getProps()} />);
 
-        fireEvent.click(screen.getByText('Delete'));
+        fireEvent.click(screen.getByText('Potwierdź'));
         expect(onConfirm).toHaveBeenCalledTimes(1);
     });
 
     it('calls onCancel when cancel button is clicked', () => {
-        render(<ConfirmModal {...getProps()} />);
+        renderWithLanguage(<ConfirmModal {...getProps()} />);
 
-        fireEvent.click(screen.getByText('Cancel'));
+        fireEvent.click(screen.getByText('Anuluj'));
         expect(onCancel).toHaveBeenCalledTimes(1);
     });
 
     it('calls onCancel when backdrop is clicked', () => {
-        const { container } = render(<ConfirmModal {...getProps()} />);
+        const { container } = renderWithLanguage(<ConfirmModal {...getProps()} />);
 
         const backdrop = container.querySelector('.modal-backdrop');
         fireEvent.click(backdrop);
@@ -58,7 +68,7 @@ describe('ConfirmModal Component', () => {
     });
 
     it('does not call onCancel when modal card is clicked', () => {
-        const { container } = render(<ConfirmModal {...getProps()} />);
+        const { container } = renderWithLanguage(<ConfirmModal {...getProps()} />);
 
         const card = container.querySelector('.modal-card');
         fireEvent.click(card);

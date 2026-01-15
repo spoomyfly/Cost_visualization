@@ -1,6 +1,8 @@
 import React from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Delete', cancelText = 'Cancel' }) => {
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, cancelText }) => {
+    const { t } = useLanguage();
     if (!isOpen) return null;
 
     return (
@@ -10,10 +12,10 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
                 <p>{message}</p>
                 <div className="modal-actions">
                     <button className="secondary" onClick={onCancel}>
-                        {cancelText}
+                        {cancelText || t('cancel')}
                     </button>
                     <button className="danger" onClick={onConfirm}>
-                        {confirmText}
+                        {confirmText || t('confirm')}
                     </button>
                 </div>
             </div>

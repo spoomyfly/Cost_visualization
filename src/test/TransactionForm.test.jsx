@@ -2,6 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import TransactionForm from '../components/TransactionForm';
+import { LanguageProvider } from '../i18n/LanguageContext';
+
+const renderWithLanguage = (ui) => {
+    return render(
+        <LanguageProvider>
+            {ui}
+        </LanguageProvider>
+    );
+};
 
 describe('TransactionForm', () => {
     const mockOnSave = vi.fn();
@@ -11,15 +20,15 @@ describe('TransactionForm', () => {
     });
 
     it('should render the form with initial fields', () => {
-        render(<TransactionForm onSave={mockOnSave} />);
-        expect(screen.getByText(/Date/i)).toBeInTheDocument();
-        expect(screen.getByText(/Name/i)).toBeInTheDocument();
-        expect(screen.getByText(/Amount/i)).toBeInTheDocument();
-        expect(screen.getByText(/Type/i)).toBeInTheDocument();
+        renderWithLanguage(<TransactionForm onSave={mockOnSave} />);
+        expect(screen.getByText(/Data/i)).toBeInTheDocument();
+        expect(screen.getByText(/Nazwa/i)).toBeInTheDocument();
+        expect(screen.getByText(/Kwota/i)).toBeInTheDocument();
+        expect(screen.getByText(/Typ/i)).toBeInTheDocument();
     });
 
     it('should call onSave when form is submitted with valid data', () => {
-        const { container } = render(<TransactionForm onSave={mockOnSave} />);
+        const { container } = renderWithLanguage(<TransactionForm onSave={mockOnSave} />);
 
         const nameInput = container.querySelector('#name');
         const amountInput = container.querySelector('#amount');
@@ -39,8 +48,6 @@ describe('TransactionForm', () => {
     });
 
     it('should not call onSave if fields are empty', () => {
-        const { container } = render(<TransactionForm onSave={mockOnSave} />);
-        // fireEvent.submit(container.querySelector('form'));
-        // expect(mockOnSave).not.toHaveBeenCalled();
+        const { container } = renderWithLanguage(<TransactionForm onSave={mockOnSave} />);
     });
 });

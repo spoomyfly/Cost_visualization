@@ -10,6 +10,7 @@ import { db, auth } from './services/firebase';
 import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions, fetchPublicTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
+import { useLanguage } from './i18n/LanguageContext';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -24,6 +25,7 @@ function App() {
   const [deleteId, setDeleteId] = useState(null);
   const [isSharedView, setIsSharedView] = useState(false);
   const [sharedUid, setSharedUid] = useState(null);
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -61,7 +63,7 @@ function App() {
       }
     } catch (error) {
       console.error("Failed to load shared data:", error);
-      setNotification({ message: 'Failed to load shared dashboard. It might be private or deleted.', type: 'error' });
+      setNotification({ message: t('sharedLoadError'), type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -97,15 +99,15 @@ function App() {
         setTransactions(validTransactions);
         setErrors(validationErrors);
         setShowPullButton(false);
-        setNotification({ message: `Successfully imported ${validTransactions.length} transactions!`, type: 'success' });
+        setNotification({ message: t('importSuccess', { count: validTransactions.length }), type: 'success' });
       } else {
-        setNotification({ message: 'No valid transactions found in the provided JSON.', type: 'error' });
+        setNotification({ message: t('importNoValid'), type: 'error' });
         if (validationErrors.length > 0) {
           setErrors(validationErrors);
         }
       }
     } catch (error) {
-      setNotification({ message: 'Invalid JSON format. Please check your input.', type: 'error' });
+      setNotification({ message: t('importInvalidJson'), type: 'error' });
     }
   };
 
@@ -158,7 +160,7 @@ function App() {
     }
 
     setDeleteId(null);
-    setNotification({ message: 'Transaction deleted successfully', type: 'success' });
+    setNotification({ message: t('deleteSuccess') || 'Transaction deleted successfully', type: 'success' });
   };
 
   const generateJson = () => {
@@ -170,28 +172,40 @@ function App() {
     try {
       const payload = buildTransactionPayload(transactions);
       await saveTransactions(payload);
-      setNotification({ message: 'Successfully saved to cloud!', type: 'success' });
+      setNotification({ message: t('saveSuccess'), type: 'success' });
     } catch (error) {
-      setNotification({ message: error.message || 'Failed to save to cloud.', type: 'error' });
+      setNotification({ message: error.message || t('saveError'), type: 'error' });
     }
   };
 
   const handleShareDashboard = () => {
     const user = auth.currentUser;
     if (!user) {
-      setNotification({ message: 'Please save to cloud first to get a shareable link.', type: 'error' });
+      setNotification({ message: t('shareError'), type: 'error' });
       return;
     }
     const shareUrl = `${window.location.origin}${window.location.pathname}?share=${user.uid}`;
     navigator.clipboard.writeText(shareUrl);
-    setNotification({ message: 'Share link copied to clipboard! Anyone with this link can view your dashboard.', type: 'success' });
+    setNotification({ message: t('shareSuccess'), type: 'success' });
   };
 
   const editingTransaction = transactions.find(t => t.id === editingId);
 
   return (
     <div className="app-container">
-      <h1>Cost Visualization</h1>
+      <div className="header-actions">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="language-switcher"
+        >
+          <option value="pl">Polski</option>
+          <option value="en">English</option>
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
+        </select>
+      </div>
+      <h1>{t('appTitle')}</h1>
 
       {notification && (
         <Notification
@@ -207,9 +221,9 @@ function App() {
 
       {isSharedView && (
         <div className="share-banner">
-          <span>Viewing Shared Dashboard</span>
+          <span>{t('sharedBanner')}</span>
           <button className="secondary small" onClick={() => window.location.href = window.location.pathname}>
-            Go to My Dashboard
+            {t('goToMyDashboard')}
           </button>
         </div>
       )}
@@ -220,13 +234,13 @@ function App() {
             className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
             onClick={() => setActiveView('transactions')}
           >
-            📝 Transactions
+            {t('navTransactions')}
           </button>
           <button
             className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveView('dashboard')}
           >
-            📊 Dashboard
+            {t('navDashboard')}
           </button>
         </div>
       )}
@@ -244,7 +258,7 @@ function App() {
 
           <div>
             {loading ? (
-              <div className="card animate-fade-in">Loading data...</div>
+              <div className="card animate-fade-in">{t('loading')}</div>
             ) : (
               <>
                 {showPullButton && transactions.length === 0 ? (
@@ -261,15 +275,15 @@ function App() {
                 {transactions.length > 0 && (
                   <div className="card animate-fade-in">
                     <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
-                      Generate JSON
+                      {t('generateJson')}
                     </button>
                     <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
-                      Save to Cloud (Firebase)
+                      {t('saveToCloud')}
                     </button>
 
                     {jsonOutput && (
                       <div>
-                        <h3>JSON Output</h3>
+                        <h3>{t('jsonOutput')}</h3>
                         <pre className="json-output">
                           {jsonOutput}
                         </pre>
@@ -277,11 +291,11 @@ function App() {
                           className="secondary"
                           onClick={() => {
                             navigator.clipboard.writeText(jsonOutput);
-                            setNotification({ message: 'Copied to clipboard!', type: 'success' });
+                            setNotification({ message: t('copied'), type: 'success' });
                           }}
                           style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
                         >
-                          Copy to Clipboard
+                          {t('copyToClipboard')}
                         </button>
                       </div>
                     )}
@@ -296,7 +310,7 @@ function App() {
           {!isSharedView && transactions.length > 0 && (
             <div className="dashboard-actions">
               <button className="secondary share-btn" onClick={handleShareDashboard}>
-                🔗 Share Dashboard
+                {t('shareDashboard')}
               </button>
             </div>
           )}
@@ -306,8 +320,8 @@ function App() {
 
       <ConfirmModal
         isOpen={!!deleteId}
-        title="Confirm Delete"
-        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        title={t('confirmDeleteTitle')}
+        message={t('confirmDeleteMsg')}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteId(null)}
       />

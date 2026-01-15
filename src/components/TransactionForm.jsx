@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -75,9 +77,9 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
 
   return (
     <form onSubmit={handleSubmit} className="card animate-fade-in">
-      <h2>{editingTransaction ? 'Edit Transaction' : 'Add Transaction'}</h2>
+      <h2>{editingTransaction ? t('editTransaction') : t('addTransaction')}</h2>
       <div className="form-group">
-        <label htmlFor="date">Date</label>
+        <label htmlFor="date">{t('date')}</label>
         <input
           type="date"
           id="date"
@@ -88,19 +90,19 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
         />
       </div>
       <div className="form-group">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name">{t('name')}</label>
         <input
           type="text"
           id="name"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder="e.g., Лампочка"
+          placeholder={t('namePlaceholder') || "e.g., Apple"}
           required
         />
       </div>
       <div className="form-group">
-        <label htmlFor="amount">Amount (zł)</label>
+        <label htmlFor="amount">{t('amount')} (zł)</label>
         <input
           type="number"
           id="amount"
@@ -113,14 +115,14 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
         />
       </div>
       <div className="form-group">
-        <label htmlFor="type">Type</label>
+        <label htmlFor="type">{t('type')}</label>
         <input
           type="text"
           id="type"
           name="type"
           value={formData.type}
           onChange={handleChange}
-          placeholder="e.g., Общее"
+          placeholder={t('typePlaceholder') || "e.g., Food"}
           list="type-suggestions"
           required
         />
@@ -133,11 +135,11 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
       <div className="actions" style={{ justifyContent: 'flex-end', marginTop: '1rem' }}>
         {editingTransaction && (
           <button type="button" className="secondary" onClick={onCancelEdit}>
-            Cancel
+            {t('cancel')}
           </button>
         )}
         <button type="submit">
-          {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
+          {editingTransaction ? t('updateTransaction') : t('addTransaction')}
         </button>
       </div>
     </form>
