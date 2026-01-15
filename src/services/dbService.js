@@ -45,8 +45,20 @@ export const fetchTransactions = async () => {
         }
 
         const uid = user.uid;
-        console.log("Fetching data from:", 'transactions/' + uid);
+        return await fetchPublicTransactions(uid);
+    } catch (error) {
+        console.error("Error in fetchTransactions:", error);
+        throw error;
+    }
+};
 
+export const fetchPublicTransactions = async (uid) => {
+    if (!db) {
+        throw new Error("Firebase is not configured.");
+    }
+
+    try {
+        console.log("Fetching public data from:", 'transactions/' + uid);
         const snapshot = await get(ref(db, 'transactions/' + uid));
         if (snapshot.exists()) {
             console.log("Data retrieved successfully");
@@ -56,7 +68,7 @@ export const fetchTransactions = async () => {
             return null;
         }
     } catch (error) {
-        console.error("Error in fetchTransactions:", error);
+        console.error("Error in fetchPublicTransactions:", error);
         throw error;
     }
 };

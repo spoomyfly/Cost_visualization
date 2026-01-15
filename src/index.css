@@ -589,3 +589,37 @@ select:focus {
   flex: 1;
   padding: 0.8rem;
 }
+
+/* Share UI */
+.share-banner {
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.share-banner span {
+  font-weight: 600;
+  color: #c4b5fd;
+}
+
+.dashboard-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.share-btn {
+  font-size: 0.85em;
+  padding: 0.5rem 1rem;
+}
+
+.small {
+  font-size: 0.8em;
+  padding: 0.4rem 0.8rem;
+}

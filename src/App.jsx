@@ -6,8 +6,9 @@ import DataRetrieval from './components/DataRetrieval';
 import Notification from './components/Notification';
 import Dashboard from './components/Dashboard';
 import ConfirmModal from './components/ConfirmModal';
+import { db, auth } from './services/firebase';
 import { buildTransactionPayload } from './services/requestBuilder';
-import { saveTransactions, fetchTransactions } from './services/dbService';
+import { saveTransactions, fetchTransactions, fetchPublicTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
 
 function App() {
@@ -21,6 +22,8 @@ function App() {
   const [notification, setNotification] = useState(null);
   const [activeView, setActiveView] = useState('transactions'); // 'transactions' or 'dashboard'
   const [deleteId, setDeleteId] = useState(null);
+  const [isSharedView, setIsSharedView] = useState(false);
+  const [sharedUid, setSharedUid] = useState(null);
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -33,9 +36,36 @@ function App() {
       })
       .catch(err => console.error("Failed to fetch rates:", err));
 
-    // Initial Data Load
-    loadData();
+    // Check for share parameter
+    const params = new URLSearchParams(window.location.search);
+    const shareUid = params.get('share');
+    if (shareUid) {
+      setIsSharedView(true);
+      setSharedUid(shareUid);
+      setActiveView('dashboard');
+      loadSharedData(shareUid);
+    } else {
+      // Initial Data Load
+      loadData();
+    }
   }, []);
+
+  const loadSharedData = async (uid) => {
+    setLoading(true);
+    try {
+      const data = await fetchPublicTransactions(uid);
+      if (data) {
+        const { validTransactions, errors: validationErrors } = validateAndMap(data);
+        setTransactions(validTransactions);
+        setErrors(validationErrors);
+      }
+    } catch (error) {
+      console.error("Failed to load shared data:", error);
+      setNotification({ message: 'Failed to load shared dashboard. It might be private or deleted.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -146,6 +176,17 @@ function App() {
     }
   };
 
+  const handleShareDashboard = () => {
+    const user = auth.currentUser;
+    if (!user) {
+      setNotification({ message: 'Please save to cloud first to get a shareable link.', type: 'error' });
+      return;
+    }
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${user.uid}`;
+    navigator.clipboard.writeText(shareUrl);
+    setNotification({ message: 'Share link copied to clipboard! Anyone with this link can view your dashboard.', type: 'success' });
+  };
+
   const editingTransaction = transactions.find(t => t.id === editingId);
 
   return (
@@ -164,20 +205,31 @@ function App() {
         <ErrorLogWindow errors={errors} onClose={() => setErrors([])} />
       )}
 
-      <div className="nav-tabs">
-        <button
-          className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
-          onClick={() => setActiveView('transactions')}
-        >
-          📝 Transactions
-        </button>
-        <button
-          className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveView('dashboard')}
-        >
-          📊 Dashboard
-        </button>
-      </div>
+      {isSharedView && (
+        <div className="share-banner">
+          <span>Viewing Shared Dashboard</span>
+          <button className="secondary small" onClick={() => window.location.href = window.location.pathname}>
+            Go to My Dashboard
+          </button>
+        </div>
+      )}
+
+      {!isSharedView && (
+        <div className="nav-tabs">
+          <button
+            className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
+            onClick={() => setActiveView('transactions')}
+          >
+            📝 Transactions
+          </button>
+          <button
+            className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveView('dashboard')}
+          >
+            📊 Dashboard
+          </button>
+        </div>
+      )}
 
       {activeView === 'transactions' ? (
         <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
@@ -240,7 +292,16 @@ function App() {
           </div>
         </div>
       ) : (
-        <Dashboard transactions={transactions} />
+        <div className="dashboard-view-container">
+          {!isSharedView && transactions.length > 0 && (
+            <div className="dashboard-actions">
+              <button className="secondary share-btn" onClick={handleShareDashboard}>
+                🔗 Share Dashboard
+              </button>
+            </div>
+          )}
+          <Dashboard transactions={transactions} />
+        </div>
       )}
 
       <ConfirmModal
