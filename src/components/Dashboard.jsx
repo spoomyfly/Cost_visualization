@@ -3,6 +3,18 @@ import React, { useMemo } from 'react';
 const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
 const Dashboard = ({ transactions }) => {
+    if (!transactions || transactions.length === 0) {
+        return (
+            <div className="dashboard-container animate-fade-in">
+                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
+                    <h2>No Data Available</h2>
+                    <p style={{ color: '#94a3b8' }}>Add some transactions to see your spending visualizations!</p>
+                </div>
+            </div>
+        );
+    }
+
     const stats = useMemo(() => {
         const totalSpent = transactions.reduce((sum, item) => sum + item.amount, 0);
         const avgCheck = transactions.length > 0 ? totalSpent / transactions.length : 0;
@@ -285,6 +297,11 @@ const Dashboard = ({ transactions }) => {
                                 <div className="calendar-amount">{day.total.toFixed(0)}</div>
                             </div>
                         ))}
+                    </div>
+                    <div className="heatmap-legend">
+                        <span>Low</span>
+                        <div className="legend-gradient"></div>
+                        <span>High</span>
                     </div>
                 </div>
 

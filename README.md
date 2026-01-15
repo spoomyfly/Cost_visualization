@@ -6,32 +6,40 @@ A modern, React-based CRUD application for managing and visualizing money transa
 
 ## Features
 
-- **Transaction Management**: Add, edit, and delete transactions.
+- **Transaction Management**: Add, edit, and delete transactions with a premium custom confirmation modal.
+- **Live Dashboard**:
+    - **Pie Chart**: Visual distribution of expenses by category.
+    - **Cumulative Growth**: Line chart showing spending trends over time.
+    - **Daily Heatmap**: Calendar-style view of spending intensity.
+    - **Top Expenses**: Ranked list of the most expensive purchases.
 - **Data Normalization**:
     - **Dates**: Automatically formatted to `DD.MM.YY`.
     - **Types**: Normalized to uppercase with special characters removed (e.g., "Food & Drink" → "FOODDRINK") for easy grouping.
 - **Currency Support**:
     - Base currency: **PLN (zł)**.
     - **Live Conversion**: View transaction amounts and total sum converted to **EUR**, **USD**, **BYN**, or **RUB** using real-time exchange rates.
-- **JSON Export**: Generate a clean JSON dataset of your transactions for external processing.
+- **Cloud Sync**: Securely save and fetch data using **Firebase Realtime Database** with anonymous authentication.
+- **JSON Export/Import**: Generate or import JSON datasets for flexibility.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
 ## Architecture
 
-- **Frontend**: React + Vite
-- **Styling**: Vanilla CSS (Glassmorphism)
+- **Frontend**: React 19 + Vite
+- **Styling**: Vanilla CSS (Variables, Flexbox/Grid, Glassmorphism)
+- **Database**: Firebase Realtime Database
+- **Authentication**: Firebase Anonymous Auth
 - **Services**:
-  - `firebase.js`: Firebase initialization.
-  - `dbService.js`: Handles database interactions (saving transactions).
+  - `dbService.js`: Handles Firebase interactions (Auth, Save, Fetch).
   - `requestBuilder.js`: Prepares data payloads for API/DB.
-  - `sheetsService.js`: Handles Google Sheets integration.
-- **Config**: `config.js` manages environment variables.
+  - `dataRetrievalService.js`: Validates and maps imported JSON data.
+- **Config**: `config.js` manages environment variables via `.env`.
 
 ## Tech Stack
 
 - **Framework**: React 19 + Vite
-- **Styling**: Vanilla CSS (Variables, Flexbox/Grid, Glassmorphism)
+- **Styling**: Vanilla CSS
 - **API**: [Open Exchange Rates API](https://open.er-api.com) for currency data.
+- **Testing**: Vitest + React Testing Library
 - **Deployment**: GitHub Pages
 
 ## Getting Started
@@ -90,7 +98,12 @@ Cost_visualization/
 ├── src/
 │   ├── components/      # React components
 │   │   ├── TransactionForm.jsx  # Form for adding/editing
-│   │   └── TransactionList.jsx  # List view with conversion logic
+│   │   ├── TransactionList.jsx  # List view with conversion logic
+│   │   ├── Dashboard.jsx        # Data visualizations
+│   │   ├── ConfirmModal.jsx     # Custom confirmation dialog
+│   │   └── Notification.jsx     # Toast notifications
+│   ├── services/        # Business logic & API calls
+│   ├── test/            # Unit & integration tests
 │   ├── App.jsx          # Main application logic & state
 │   ├── main.jsx         # Entry point
 │   └── index.css        # Global styles & variables

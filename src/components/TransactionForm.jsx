@@ -55,10 +55,11 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const amount = parseFloat(formData.amount);
     onSave({
       date: formatDateToDisplay(formData.date),
       name: formData.name,
-      amount: parseFloat(parseFloat(formData.amount).toFixed(2)) || 0,
+      amount: isNaN(amount) ? 0 : parseFloat(amount.toFixed(2)),
       type: formData.type
     });
 
