@@ -12,11 +12,15 @@ describe('requestBuilder', () => {
         it('should handle unicode characters', () => {
             expect(normalizeType('Jedzenie i Picie')).toBe('JEDZENIEIPICIE');
             expect(normalizeType('Kawiarnia ☕')).toBe('KAWIARNIA');
+            expect(normalizeType('ЕДА')).toBe('ЕДА');
+            expect(normalizeType('Продукты 🍎')).toBe('ПРОДУКТЫ');
         });
 
-        it('should return empty string for null or undefined', () => {
+        it('should return OTHER for empty or special-only strings', () => {
             expect(normalizeType(null)).toBe('');
             expect(normalizeType(undefined)).toBe('');
+            expect(normalizeType('!!!')).toBe('OTHER');
+            expect(normalizeType('   ')).toBe('OTHER');
         });
     });
 

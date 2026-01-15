@@ -1,12 +1,13 @@
 export const normalizeType = (type) => {
     if (!type) return '';
-    // Remove special signs (keep only letters and numbers) and uppercase
-    // Using regex to match only alphanumeric characters from any language
+    // Remove special signs (keep only letters and numbers from any language) and uppercase
     // \p{L} matches any unicode letter, \p{N} matches any unicode number
-    return type
-        .replace(/[^\w\s]/gi, '') // Remove special characters except alphanumeric and spaces
-        .replace(/\s+/g, '')      // Remove all spaces
+    const normalized = type
+        .replace(/[^\p{L}\p{N}\s]/gu, '') // Remove special characters except letters, numbers and spaces
+        .replace(/\s+/g, '')             // Remove all spaces
         .toUpperCase();
+
+    return normalized || 'OTHER'; // Fallback to 'OTHER' if normalization results in empty string
 };
 
 export const buildTransactionPayload = (transactions) => {

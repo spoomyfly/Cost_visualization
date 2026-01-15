@@ -11,13 +11,21 @@ describe('dataRetrievalService', () => {
 
         it('should validate required fields', () => {
             const data = [
-                { name: 'Test' } // Missing date, amount, type
+                { name: 'Test' } // Missing date, amount
             ];
             const { validTransactions, errors } = validateAndMap(data);
             expect(errors).toHaveLength(1);
             expect(errors[0].messages).toContain("Missing date");
             expect(errors[0].messages).toContain("Missing amount");
-            expect(errors[0].messages).toContain("Missing type");
+        });
+
+        it('should default empty type to OTHER', () => {
+            const data = [
+                { date: '2023-01-01', name: 'Test', amount: 10, type: '' }
+            ];
+            const { validTransactions, errors } = validateAndMap(data);
+            expect(errors).toHaveLength(0);
+            expect(validTransactions[0].type).toBe('OTHER');
         });
 
         it('should validate amount is a number', () => {
