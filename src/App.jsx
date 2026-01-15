@@ -4,6 +4,7 @@ import TransactionList from './components/TransactionList';
 import ErrorLogWindow from './components/ErrorLogWindow';
 import DataRetrieval from './components/DataRetrieval';
 import Notification from './components/Notification';
+import Dashboard from './components/Dashboard';
 import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
@@ -17,6 +18,7 @@ function App() {
   const [showPullButton, setShowPullButton] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
+  const [activeView, setActiveView] = useState('transactions'); // 'transactions' or 'dashboard'
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -157,65 +159,84 @@ function App() {
         <ErrorLogWindow errors={errors} onClose={() => setErrors([])} />
       )}
 
-      <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        <div>
-          <TransactionForm
-            onSave={handleSaveTransaction}
-            editingTransaction={editingTransaction}
-            onCancelEdit={handleCancelEdit}
-            existingTypes={uniqueTypes}
-          />
-        </div>
-
-        <div>
-          {loading ? (
-            <div className="card animate-fade-in">Loading data...</div>
-          ) : (
-            <>
-              {showPullButton && transactions.length === 0 ? (
-                <DataRetrieval onRetrieve={handleManualRetrieve} onImport={handleImportJson} />
-              ) : (
-                <TransactionList
-                  transactions={transactions}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  rates={rates}
-                />
-              )}
-
-              {transactions.length > 0 && (
-                <div className="card animate-fade-in">
-                  <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
-                    Generate JSON
-                  </button>
-                  <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
-                    Save to Cloud (Firebase)
-                  </button>
-
-                  {jsonOutput && (
-                    <div>
-                      <h3>JSON Output</h3>
-                      <pre className="json-output">
-                        {jsonOutput}
-                      </pre>
-                      <button
-                        className="secondary"
-                        onClick={() => {
-                          navigator.clipboard.writeText(jsonOutput);
-                          setNotification({ message: 'Copied to clipboard!', type: 'success' });
-                        }}
-                        style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
-                      >
-                        Copy to Clipboard
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      <div className="nav-tabs">
+        <button
+          className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
+          onClick={() => setActiveView('transactions')}
+        >
+          📝 Transactions
+        </button>
+        <button
+          className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveView('dashboard')}
+        >
+          📊 Dashboard
+        </button>
       </div>
+
+      {activeView === 'transactions' ? (
+        <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+          <div>
+            <TransactionForm
+              onSave={handleSaveTransaction}
+              editingTransaction={editingTransaction}
+              onCancelEdit={handleCancelEdit}
+              existingTypes={uniqueTypes}
+            />
+          </div>
+
+          <div>
+            {loading ? (
+              <div className="card animate-fade-in">Loading data...</div>
+            ) : (
+              <>
+                {showPullButton && transactions.length === 0 ? (
+                  <DataRetrieval onRetrieve={handleManualRetrieve} onImport={handleImportJson} />
+                ) : (
+                  <TransactionList
+                    transactions={transactions}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    rates={rates}
+                  />
+                )}
+
+                {transactions.length > 0 && (
+                  <div className="card animate-fade-in">
+                    <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
+                      Generate JSON
+                    </button>
+                    <button onClick={handleSaveToCloud} style={{ width: '100%', marginBottom: '1rem' }} className="primary">
+                      Save to Cloud (Firebase)
+                    </button>
+
+                    {jsonOutput && (
+                      <div>
+                        <h3>JSON Output</h3>
+                        <pre className="json-output">
+                          {jsonOutput}
+                        </pre>
+                        <button
+                          className="secondary"
+                          onClick={() => {
+                            navigator.clipboard.writeText(jsonOutput);
+                            setNotification({ message: 'Copied to clipboard!', type: 'success' });
+                          }}
+                          style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
+                        >
+                          Copy to Clipboard
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <Dashboard transactions={transactions} />
+      )}
     </div>
   );
 }
