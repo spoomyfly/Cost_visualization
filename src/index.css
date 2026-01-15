@@ -200,6 +200,35 @@ select:focus {
   font-size: 0.9em;
   color: #a5b4fc;
   border: 1px solid var(--glass-border);
+  transition: max-height 0.3s ease-out;
+}
+
+.json-output.minimized {
+  max-height: 120px;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.json-output.minimized::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(transparent, #1e293b);
+  pointer-events: none;
+}
+
+.json-output.expanded {
+  max-height: 1000px;
+  /* Large enough to show most JSONs */
+  overflow-y: auto;
+}
+
+.json-output-container h3 {
+  font-size: 1.1rem;
+  color: var(--text-color);
 }
 
 /* Animations */

@@ -16,6 +16,7 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [jsonOutput, setJsonOutput] = useState('');
+  const [isJsonExpanded, setIsJsonExpanded] = useState(false);
   const [rates, setRates] = useState(null);
   const [errors, setErrors] = useState([]);
   const [showPullButton, setShowPullButton] = useState(false);
@@ -134,6 +135,7 @@ function App() {
 
   const handleEdit = (transaction) => {
     setEditingId(transaction.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelEdit = () => {
@@ -166,6 +168,7 @@ function App() {
   const generateJson = () => {
     const output = buildTransactionPayload(transactions);
     setJsonOutput(JSON.stringify(output, null, 2));
+    setIsJsonExpanded(false); // Default to minimized when newly generated
   };
 
   const handleSaveToCloud = async () => {
@@ -222,41 +225,43 @@ function App() {
       {isSharedView && (
         <div className="share-banner">
           <span>{t('sharedBanner')}</span>
-          <button className="secondary small" onClick={() => window.location.href = window.location.pathname}>
+          <button className="secondary small" onClick={() => {
+            window.location.href = window.location.origin + window.location.pathname;
+          }}>
             {t('goToMyDashboard')}
           </button>
         </div>
       )}
 
-      {!isSharedView && (
-        <div className="nav-tabs">
-          <button
-            className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
-            onClick={() => setActiveView('transactions')}
-          >
-            {t('navTransactions')}
-          </button>
-          <button
-            className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveView('dashboard')}
-          >
-            {t('navDashboard')}
-          </button>
-        </div>
-      )}
+      <div className="nav-tabs">
+        <button
+          className={`nav-tab ${activeView === 'transactions' ? 'active' : ''}`}
+          onClick={() => setActiveView('transactions')}
+        >
+          {t('navTransactions')}
+        </button>
+        <button
+          className={`nav-tab ${activeView === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveView('dashboard')}
+        >
+          {t('navDashboard')}
+        </button>
+      </div>
 
       {activeView === 'transactions' ? (
-        <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-          <div>
-            <TransactionForm
-              onSave={handleSaveTransaction}
-              editingTransaction={editingTransaction}
-              onCancelEdit={handleCancelEdit}
-              existingTypes={uniqueTypes}
-            />
-          </div>
+        <div className="dashboard-grid">
+          {!isSharedView && (
+            <div className="transaction-form-container">
+              <TransactionForm
+                onSave={handleSaveTransaction}
+                editingTransaction={editingTransaction}
+                onCancel={handleCancelEdit}
+                uniqueTypes={uniqueTypes}
+              />
+            </div>
+          )}
 
-          <div>
+          <div className="transaction-list-container">
             {loading ? (
               <div className="card animate-fade-in">{t('loading')}</div>
             ) : (
@@ -272,7 +277,7 @@ function App() {
                   />
                 )}
 
-                {transactions.length > 0 && (
+                {transactions.length > 0 && !isSharedView && (
                   <div className="card animate-fade-in">
                     <button onClick={generateJson} style={{ width: '100%', marginBottom: '1rem' }}>
                       {t('generateJson')}
@@ -282,9 +287,17 @@ function App() {
                     </button>
 
                     {jsonOutput && (
-                      <div>
-                        <h3>{t('jsonOutput')}</h3>
-                        <pre className="json-output">
+                      <div className="json-output-container">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <h3 style={{ margin: 0 }}>{t('jsonOutput')}</h3>
+                          <button
+                            className="secondary small"
+                            onClick={() => setIsJsonExpanded(!isJsonExpanded)}
+                          >
+                            {isJsonExpanded ? t('showLess') : t('showAll')}
+                          </button>
+                        </div>
+                        <pre className={`json-output ${isJsonExpanded ? 'expanded' : 'minimized'}`}>
                           {jsonOutput}
                         </pre>
                         <button
@@ -293,7 +306,7 @@ function App() {
                             navigator.clipboard.writeText(jsonOutput);
                             setNotification({ message: t('copied'), type: 'success' });
                           }}
-                          style={{ marginTop: '0.5rem', fontSize: '0.8em' }}
+                          style={{ marginTop: '0.5rem', fontSize: '0.8em', width: '100%' }}
                         >
                           {t('copyToClipboard')}
                         </button>
