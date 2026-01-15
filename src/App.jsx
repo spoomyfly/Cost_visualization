@@ -57,11 +57,6 @@ function App() {
     }
   };
 
-  const handleManualRetrieve = () => {
-    // For now, this just retries the fetch, acting as the "Pull from Google Sheets" action
-    // In a real scenario, this might trigger a specific cloud function or API call
-    loadData();
-  };
 
   const handleImportJson = (jsonString) => {
     try {
@@ -201,7 +196,7 @@ function App() {
             ) : (
               <>
                 {showPullButton && transactions.length === 0 ? (
-                  <DataRetrieval onRetrieve={handleManualRetrieve} onImport={handleImportJson} />
+                  <DataRetrieval onImport={handleImportJson} />
                 ) : (
                   <TransactionList
                     transactions={transactions}

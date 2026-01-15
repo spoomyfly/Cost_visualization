@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DataRetrieval = ({ onRetrieve, onImport }) => {
+const DataRetrieval = ({ onImport }) => {
     const [isImporting, setIsImporting] = useState(false);
     const [jsonInput, setJsonInput] = useState('');
 
@@ -46,11 +46,8 @@ const DataRetrieval = ({ onRetrieve, onImport }) => {
     return (
         <div className="card animate-fade-in" style={{ textAlign: 'center', padding: '2rem' }}>
             <h3>No Data Found</h3>
-            <p>Your transaction list is empty. You can pull data from the cloud source or import from JSON.</p>
+            <p>Your transaction list is empty. You can import data from a JSON file.</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
-                <button onClick={onRetrieve} className="primary">
-                    Pull from Google Sheets
-                </button>
                 <button onClick={() => setIsImporting(true)} className="secondary">
                     Import JSON
                 </button>
