@@ -5,6 +5,7 @@ import ErrorLogWindow from './components/ErrorLogWindow';
 import DataRetrieval from './components/DataRetrieval';
 import Notification from './components/Notification';
 import Dashboard from './components/Dashboard';
+import ConfirmModal from './components/ConfirmModal';
 import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
@@ -19,6 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [activeView, setActiveView] = useState('transactions'); // 'transactions' or 'dashboard'
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     // Fetch rates for PLN base
@@ -112,18 +114,26 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      setTransactions(prev => {
-        const newTransactions = prev.filter(t => t.id !== id);
-        if (newTransactions.length === 0) {
-          setShowPullButton(true);
-        }
-        return newTransactions;
-      });
-      if (editingId === id) {
-        setEditingId(null);
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteId) return;
+
+    setTransactions(prev => {
+      const newTransactions = prev.filter(t => t.id !== deleteId);
+      if (newTransactions.length === 0) {
+        setShowPullButton(true);
       }
+      return newTransactions;
+    });
+
+    if (editingId === deleteId) {
+      setEditingId(null);
     }
+
+    setDeleteId(null);
+    setNotification({ message: 'Transaction deleted successfully', type: 'success' });
   };
 
   const generateJson = () => {
@@ -237,6 +247,14 @@ function App() {
       ) : (
         <Dashboard transactions={transactions} />
       )}
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }
