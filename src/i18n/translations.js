@@ -73,7 +73,11 @@ export const translations = {
         items: "pozycji",
         namePlaceholder: "np. Żarówka",
         typePlaceholder: "np. Ogólne",
-        deleteSuccess: "Transakcja usunięta pomyślnie"
+        deleteSuccess: "Transakcja usunięta pomyślnie",
+        search: "Szukaj...",
+        showResults: "Pokaż wyniki",
+        noResults: "Nie znaleziono wyników",
+        found: "znaleziono"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -149,7 +153,11 @@ export const translations = {
         items: "позицій",
         namePlaceholder: "напр., Лампочка",
         typePlaceholder: "напр., Загальне",
-        deleteSuccess: "Транзакцію успішно видалено"
+        deleteSuccess: "Транзакцію успішно видалено",
+        search: "Пошук...",
+        showResults: "Показати результати",
+        noResults: "Результатів не знайдено",
+        found: "знайдено"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -225,7 +233,11 @@ export const translations = {
         items: "позиций",
         namePlaceholder: "напр., Лампочка",
         typePlaceholder: "напр., Общее",
-        deleteSuccess: "Транзакция успешно удалена"
+        deleteSuccess: "Транзакция успешно удалена",
+        search: "Поиск...",
+        showResults: "Показать результаты",
+        noResults: "Результатов не найдено",
+        found: "найдено"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -301,6 +313,10 @@ export const translations = {
         items: "items",
         namePlaceholder: "e.g., Apple",
         typePlaceholder: "e.g., Food",
-        deleteSuccess: "Transaction deleted successfully"
+        deleteSuccess: "Transaction deleted successfully",
+        search: "Search...",
+        showResults: "Show results",
+        noResults: "No results found",
+        found: "found"
     }
 };
