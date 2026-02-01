@@ -3,10 +3,11 @@ import { useLanguage } from '../i18n/LanguageContext';
 import TransactionListModal from './TransactionListModal';
 import PieChart from './PieChart';
 import CumulativeChart from './CumulativeChart';
+import DataRetrieval from './DataRetrieval';
 
 const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
-const Dashboard = ({ transactions, onEdit, onDelete }) => {
+const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }) => {
     const { t } = useLanguage();
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -15,6 +16,8 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
         title: '',
         transactions: []
     });
+
+    const isAllProjects = selectedProject === 'All';
 
     const filteredTransactions = useMemo(() => {
         if (!transactions) return [];
@@ -50,7 +53,7 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
                 totalSpent: 0,
                 avgCheck: 0,
                 totalCount: 0,
-                sortedTypes: [],
+                sortedGroups: [],
                 sortedDaily: [],
                 topExpenses: [],
                 cumulativeData: []
@@ -60,18 +63,19 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
         const totalSpent = filteredTransactions.reduce((sum, item) => sum + item.amount, 0);
         const avgCheck = filteredTransactions.length > 0 ? totalSpent / filteredTransactions.length : 0;
 
-        // Type stats
-        const typeMap = {};
+        // Grouping stats (by Type or by Project)
+        const groupMap = {};
         filteredTransactions.forEach(item => {
-            if (!typeMap[item.type]) {
-                typeMap[item.type] = { total: 0, count: 0, items: [] };
+            const groupKey = isAllProjects ? (item.project || t('budget')) : item.type;
+            if (!groupMap[groupKey]) {
+                groupMap[groupKey] = { total: 0, count: 0, items: [] };
             }
-            typeMap[item.type].total += item.amount;
-            typeMap[item.type].count += 1;
-            typeMap[item.type].items.push(item);
+            groupMap[groupKey].total += item.amount;
+            groupMap[groupKey].count += 1;
+            groupMap[groupKey].items.push(item);
         });
 
-        const sortedTypes = Object.entries(typeMap)
+        const sortedGroups = Object.entries(groupMap)
             .map(([name, data]) => ({
                 name,
                 value: data.total,
@@ -114,12 +118,12 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
             totalSpent,
             avgCheck,
             totalCount: filteredTransactions.length,
-            sortedTypes,
+            sortedGroups,
             sortedDaily,
             topExpenses,
             cumulativeData
         };
-    }, [filteredTransactions]);
+    }, [filteredTransactions, isAllProjects, t]);
 
     const handleOpenModal = (title, items) => {
         setModalConfig({
@@ -132,11 +136,7 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
     if (!transactions || transactions.length === 0) {
         return (
             <div className="dashboard-container animate-fade-in">
-                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
-                    <h2>{t('noDataAvailable')}</h2>
-                    <p style={{ color: '#94a3b8' }}>{t('noDataDesc')}</p>
-                </div>
+                <DataRetrieval onImport={onImport} />
             </div>
         );
     }
@@ -194,14 +194,14 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
 
             <div className="dashboard-grid">
                 <div className="card">
-                    <h3>🥧 {t('expensesByType')}</h3>
+                    <h3>🥧 {isAllProjects ? t('expensesByProject') : t('expensesByType')}</h3>
                     <PieChart
-                        sortedTypes={stats.sortedTypes}
+                        sortedTypes={stats.sortedGroups}
                         totalSpent={stats.totalSpent}
                         onSliceClick={(name, items) => handleOpenModal(`${name}`, items)}
                     />
                     <div className="stats-list">
-                        {stats.sortedTypes.map((item, i) => (
+                        {stats.sortedGroups.map((item, i) => (
                             <div key={i} className="stat-item" onClick={() => handleOpenModal(item.name, item.items)} style={{ cursor: 'pointer' }}>
                                 <div className="stat-name-group">
                                     <div className="stat-color-dot" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
@@ -248,7 +248,7 @@ const Dashboard = ({ transactions, onEdit, onDelete }) => {
                             <div key={i} className="top-expense-item">
                                 <div className="top-expense-info">
                                     <div className="top-expense-name">{i + 1}. {item.name}</div>
-                                    <div className="top-expense-meta">{item.date} • {item.type}</div>
+                                    <div className="top-expense-meta">{item.date} • {isAllProjects ? (item.project || t('budget')) + ' • ' : ''}{item.type}</div>
                                 </div>
                                 <div className="top-expense-amount">{item.amount} PLN</div>
                             </div>

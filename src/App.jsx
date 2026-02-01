@@ -321,7 +321,7 @@ function App() {
               <div className="card animate-fade-in">{t('loading')}</div>
             ) : (
               <>
-                {showPullButton && transactions.length === 0 ? (
+                {filteredTransactions.length === 0 && !isSharedView ? (
                   <DataRetrieval onImport={handleImportJson} />
                 ) : (
                   <TransactionList
@@ -386,6 +386,8 @@ function App() {
             transactions={filteredTransactions}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            selectedProject={selectedProject}
+            onImport={handleImportJson}
           />
         </div>
       )}
