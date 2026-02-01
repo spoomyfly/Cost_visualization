@@ -1,22 +1,16 @@
-import { db, auth } from './firebase';
+import { db } from './firebase';
 import { ref, set, get } from 'firebase/database';
-import { signInAnonymously } from 'firebase/auth';
+import { loginAnonymously, getCurrentUser } from './authService';
 
 export const saveTransactions = async (data) => {
-    if (!db || !auth) {
+    if (!db) {
         throw new Error("Firebase is not configured. Please check your .env file.");
     }
 
     try {
-        // Auto-login anonymously if not already logged in
-        let user = auth.currentUser;
+        const user = getCurrentUser();
         if (!user) {
-            console.log("Logging in anonymously...");
-            const userCredential = await signInAnonymously(auth);
-            user = userCredential.user;
-            console.log("Logged in as:", user.uid);
-        } else {
-            console.log("Already logged in as:", user.uid);
+            throw new Error("User not authenticated. Please sign in.");
         }
 
         const uid = user.uid;
@@ -32,16 +26,16 @@ export const saveTransactions = async (data) => {
 };
 
 export const fetchTransactions = async () => {
-    if (!db || !auth) {
+    if (!db) {
         throw new Error("Firebase is not configured. Please check your .env file.");
     }
 
     try {
-        let user = auth.currentUser;
+        const user = getCurrentUser();
         if (!user) {
-            console.log("Logging in anonymously for fetch...");
-            const userCredential = await signInAnonymously(auth);
-            user = userCredential.user;
+            // Instead of auto-login here, we return null so the UI can decide
+            console.warn("fetchTransactions: No user logged in.");
+            return null;
         }
 
         const uid = user.uid;

@@ -90,7 +90,9 @@ export const translations = {
         enterProjectName: "Wpisz nazwę projektu:",
         add: "Dodaj",
         projectName: "Nazwa projektu",
-        duplicateProject: "Taki projekt już istnieje"
+        duplicateProject: "Taki projekt już istnieje",
+        signInWithGoogle: "Zaloguj przez Google",
+        logout: "Wyloguj"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -183,7 +185,9 @@ export const translations = {
         enterProjectName: "Введіть назву проекту:",
         add: "Додати",
         projectName: "Назва проекту",
-        duplicateProject: "Такий проект вже існує"
+        duplicateProject: "Такий проект вже існує",
+        signInWithGoogle: "Увійти за допомогою Google",
+        logout: "Вийти"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -276,7 +280,9 @@ export const translations = {
         enterProjectName: "Введите название проекта:",
         add: "Добавить",
         projectName: "Название проекта",
-        duplicateProject: "Такой проект уже существует"
+        duplicateProject: "Такой проект уже существует",
+        signInWithGoogle: "Войти через Google",
+        logout: "Выйти"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -369,6 +375,8 @@ export const translations = {
         enterProjectName: "Enter project name:",
         add: "Add",
         projectName: "Project Name",
-        duplicateProject: "Project already exists"
+        duplicateProject: "Project already exists",
+        signInWithGoogle: "Sign in with Google",
+        logout: "Logout"
     }
 };

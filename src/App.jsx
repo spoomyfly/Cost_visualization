@@ -12,6 +12,8 @@ import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions, fetchPublicTransactions } from './services/dbService';
 import { validateAndMap } from './services/dataRetrievalService';
 import { useLanguage } from './i18n/LanguageContext';
+import Auth from './components/Auth';
+import { loginAnonymously } from './services/authService';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -49,10 +51,23 @@ function App() {
       setActiveView('dashboard');
       loadSharedData(shareUid);
     } else {
-      // Initial Data Load
-      loadData();
+      // Data will be loaded via onAuthChange in the Auth component
     }
   }, []);
+
+  const [lastLoadedUid, setLastLoadedUid] = useState(null);
+
+  const handleAuthChange = (user) => {
+    if (user) {
+      if (user.uid !== lastLoadedUid) {
+        setLastLoadedUid(user.uid);
+        loadData();
+      }
+    } else {
+      // Trigger anonymous login if no user is found
+      loginAnonymously();
+    }
+  };
 
   const [selectedProject, setSelectedProject] = useState('All');
   const [manualProjects, setManualProjects] = useState([]);
@@ -250,16 +265,19 @@ function App() {
             +
           </button>
         </div>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="language-switcher"
-        >
-          <option value="pl">Polski</option>
-          <option value="en">English</option>
-          <option value="uk">Українська</option>
-          <option value="ru">Русский</option>
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Auth onAuthChange={handleAuthChange} />
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="language-switcher"
+          >
+            <option value="pl">Polski</option>
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
       </div>
       <h1>{selectedProject === 'All' ? t('appTitle') : selectedProject}</h1>
 
