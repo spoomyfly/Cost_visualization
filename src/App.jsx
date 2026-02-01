@@ -382,7 +382,11 @@ function App() {
               </button>
             </div>
           )}
-          <Dashboard transactions={filteredTransactions} />
+          <Dashboard
+            transactions={filteredTransactions}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
       )}
 

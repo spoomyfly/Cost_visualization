@@ -1,12 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import TransactionListModal from './TransactionListModal';
 
 const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
-const Dashboard = ({ transactions }) => {
+const Dashboard = ({ transactions, onEdit, onDelete }) => {
     const { t } = useLanguage();
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        title: '',
+        transactions: []
+    });
 
     const filteredTransactions = useMemo(() => {
         if (!transactions) return [];
@@ -27,7 +33,7 @@ const Dashboard = ({ transactions }) => {
                 if (endDate) {
                     const [eY, eM, eD] = endDate.split('-').map(Number);
                     const endTs = new Date(eY, eM - 1, eD).getTime();
-                    endOk = tDate <= endTs; // Both are local midnight, so equality works
+                    endOk = tDate <= endTs;
                 }
                 return startOk && endOk;
             });
@@ -56,17 +62,19 @@ const Dashboard = ({ transactions }) => {
         const typeMap = {};
         filteredTransactions.forEach(item => {
             if (!typeMap[item.type]) {
-                typeMap[item.type] = { total: 0, count: 0 };
+                typeMap[item.type] = { total: 0, count: 0, items: [] };
             }
             typeMap[item.type].total += item.amount;
             typeMap[item.type].count += 1;
+            typeMap[item.type].items.push(item);
         });
 
         const sortedTypes = Object.entries(typeMap)
             .map(([name, data]) => ({
                 name,
                 value: data.total,
-                count: data.count
+                count: data.count,
+                items: data.items
             }))
             .sort((a, b) => b.value - a.value);
 
@@ -74,13 +82,14 @@ const Dashboard = ({ transactions }) => {
         const dailyMap = {};
         filteredTransactions.forEach(item => {
             if (!dailyMap[item.date]) {
-                dailyMap[item.date] = 0;
+                dailyMap[item.date] = { total: 0, items: [] };
             }
-            dailyMap[item.date] += item.amount;
+            dailyMap[item.date].total += item.amount;
+            dailyMap[item.date].items.push(item);
         });
 
         const sortedDaily = Object.entries(dailyMap)
-            .map(([date, total]) => ({ date, total }))
+            .map(([date, data]) => ({ date, total: data.total, items: data.items }))
             .sort((a, b) => {
                 const [d1, m1, y1] = a.date.split('.');
                 const [d2, m2, y2] = b.date.split('.');
@@ -109,6 +118,14 @@ const Dashboard = ({ transactions }) => {
             cumulativeData
         };
     }, [filteredTransactions]);
+
+    const handleOpenModal = (title, items) => {
+        setModalConfig({
+            isOpen: true,
+            title,
+            transactions: items
+        });
+    };
 
     if (!transactions || transactions.length === 0) {
         return (
@@ -147,7 +164,6 @@ const Dashboard = ({ transactions }) => {
 
             const largeArc = angle > 180 ? 1 : 0;
 
-            // Handle complete circle case if only 1 item
             const path = angle === 360
                 ? [`M ${center} ${center - radius}`, `A ${radius} ${radius} 0 1 1 ${center} ${center + radius}`, `A ${radius} ${radius} 0 1 1 ${center} ${center - radius}`, 'Z'].join(' ')
                 : [
@@ -168,7 +184,8 @@ const Dashboard = ({ transactions }) => {
                 labelX,
                 labelY,
                 percentage: percentage.toFixed(0),
-                name: item.name
+                name: item.name,
+                items: item.items
             });
 
             currentAngle = endAngle;
@@ -183,8 +200,10 @@ const Dashboard = ({ transactions }) => {
                                 d={slice.path}
                                 fill={slice.color}
                                 className="pie-slice"
+                                onClick={() => handleOpenModal(`${slice.name} (${slice.percentage}%)`, slice.items)}
+                                style={{ cursor: 'pointer' }}
                             >
-                                <title>{slice.name}: {slice.percentage}%</title>
+                                <title>{slice.name}: {slice.percentage}% - Click to view</title>
                             </path>
                             {parseFloat(slice.percentage) > 5 && (
                                 <text
@@ -195,7 +214,7 @@ const Dashboard = ({ transactions }) => {
                                     fill="white"
                                     fontSize="12"
                                     fontWeight="bold"
-                                    style={{ transform: 'rotate(90deg)', transformOrigin: `${slice.labelX}px ${slice.labelY}px` }}
+                                    style={{ transform: 'rotate(90deg)', transformOrigin: `${slice.labelX}px ${slice.labelY}px`, pointerEvents: 'none' }}
                                 >
                                     {slice.percentage}%
                                 </text>
@@ -205,7 +224,7 @@ const Dashboard = ({ transactions }) => {
                 </svg>
                 <div className="pie-legend">
                     {slices.map((slice, i) => (
-                        <div key={i} className="legend-item">
+                        <div key={i} className="legend-item" onClick={() => handleOpenModal(slice.name, slice.items)} style={{ cursor: 'pointer' }}>
                             <div className="stat-color-dot" style={{ backgroundColor: slice.color }}></div>
                             <span>{slice.name} ({slice.percentage}%)</span>
                         </div>
@@ -342,7 +361,7 @@ const Dashboard = ({ transactions }) => {
                     {renderPieChart()}
                     <div className="stats-list">
                         {stats.sortedTypes.map((item, i) => (
-                            <div key={i} className="stat-item">
+                            <div key={i} className="stat-item" onClick={() => handleOpenModal(item.name, item.items)} style={{ cursor: 'pointer' }}>
                                 <div className="stat-name-group">
                                     <div className="stat-color-dot" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
                                     <span>{item.name}</span>
@@ -366,7 +385,8 @@ const Dashboard = ({ transactions }) => {
                             <div
                                 key={i}
                                 className="calendar-day"
-                                style={{ backgroundColor: getHeatmapColor(day.total, Math.max(...stats.sortedDaily.map(d => d.total))) }}
+                                style={{ backgroundColor: getHeatmapColor(day.total, Math.max(...stats.sortedDaily.map(d => d.total))), cursor: 'pointer' }}
+                                onClick={() => handleOpenModal(day.date, day.items)}
                             >
                                 <div className="calendar-date">{day.date}</div>
                                 <div className="calendar-amount">{day.total.toFixed(0)}</div>
@@ -395,6 +415,15 @@ const Dashboard = ({ transactions }) => {
                     </div>
                 </div>
             </div>
+
+            <TransactionListModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                transactions={modalConfig.transactions}
+                onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                onEdit={onEdit}
+                onDelete={onDelete}
+            />
         </div>
     );
 };
