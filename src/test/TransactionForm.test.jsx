@@ -25,6 +25,7 @@ describe('TransactionForm', () => {
         expect(screen.getByText(/Nazwa/i)).toBeInTheDocument();
         expect(screen.getByText(/Kwota/i)).toBeInTheDocument();
         expect(screen.getByText(/Typ/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projekt/i)).toBeInTheDocument();
     });
 
     it('should call onSave when form is submitted with valid data', () => {
@@ -33,17 +34,20 @@ describe('TransactionForm', () => {
         const nameInput = container.querySelector('#name');
         const amountInput = container.querySelector('#amount');
         const typeInput = container.querySelector('#type');
+        const projectInput = container.querySelector('#project');
 
         fireEvent.change(nameInput, { target: { value: 'Coffee' } });
         fireEvent.change(amountInput, { target: { value: '15' } });
         fireEvent.change(typeInput, { target: { value: 'Food' } });
+        fireEvent.change(projectInput, { target: { value: 'MyProject' } });
 
         fireEvent.submit(container.querySelector('form'));
 
         expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
             name: 'Coffee',
             amount: 15,
-            type: 'Food'
+            type: 'Food',
+            project: 'MyProject'
         }));
     });
 

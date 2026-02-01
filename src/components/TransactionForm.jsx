@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes }) => {
+const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes, existingProjects, defaultProject }) => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     date: '',
     name: '',
     amount: '',
-    type: ''
+    type: '',
+    project: ''
   });
 
   // Helper to format Date object to DD.MM.YY
@@ -34,17 +35,19 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
     if (editingTransaction) {
       setFormData({
         ...editingTransaction,
-        date: formatDateToInput(editingTransaction.date)
+        date: formatDateToInput(editingTransaction.date),
+        project: editingTransaction.project || 'Budget'
       });
     } else {
       setFormData({
         date: new Date().toISOString().split('T')[0],
         name: '',
         amount: '',
-        type: ''
+        type: '',
+        project: defaultProject || 'Budget'
       });
     }
-  }, [editingTransaction]);
+  }, [editingTransaction, defaultProject]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +65,8 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
       date: formatDateToDisplay(formData.date),
       name: formData.name,
       amount: isNaN(amount) ? 0 : parseFloat(amount.toFixed(2)),
-      type: formData.type
+      type: formData.type,
+      project: formData.project || 'Budget'
     });
 
     if (!editingTransaction) {
@@ -70,7 +74,8 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
         date: new Date().toISOString().split('T')[0],
         name: '',
         amount: '',
-        type: ''
+        type: '',
+        project: defaultProject || 'Budget'
       });
     }
   };
@@ -78,6 +83,26 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
   return (
     <form onSubmit={handleSubmit} className="card animate-fade-in">
       <h2>{editingTransaction ? t('editTransaction') : t('addTransaction')}</h2>
+
+      <div className="form-group">
+        <label htmlFor="project">{t('project')}</label>
+        <input
+          type="text"
+          id="project"
+          name="project"
+          value={formData.project}
+          onChange={handleChange}
+          placeholder={t('budget') || "Budget"}
+          list="project-suggestions"
+          required
+        />
+        <datalist id="project-suggestions">
+          {existingProjects && existingProjects.map((proj, index) => (
+            <option key={index} value={proj} />
+          ))}
+        </datalist>
+      </div>
+
       <div className="form-group">
         <label htmlFor="date">{t('date')}</label>
         <input

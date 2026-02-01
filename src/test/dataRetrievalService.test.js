@@ -55,5 +55,23 @@ describe('dataRetrievalService', () => {
             const { validTransactions } = validateAndMap(data);
             expect(validTransactions[0].id).toBe('existing-id');
         });
+
+        it('should default missing project to Budget', () => {
+            const data = [
+                { date: '2023-01-01', name: 'Test', amount: 10, type: 'Food', project: '' },
+                { date: '2023-01-01', name: 'Test2', amount: 10, type: 'Food' }
+            ];
+            const { validTransactions } = validateAndMap(data);
+            expect(validTransactions[0].project).toBe('Budget');
+            expect(validTransactions[1].project).toBe('Budget');
+        });
+
+        it('should keep existing project', () => {
+            const data = [
+                { date: '2023-01-01', name: 'Test', amount: 10, type: 'Food', project: 'My Project' }
+            ];
+            const { validTransactions } = validateAndMap(data);
+            expect(validTransactions[0].project).toBe('My Project');
+        });
     });
 });

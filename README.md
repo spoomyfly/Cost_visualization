@@ -20,6 +20,8 @@ A modern, React-based CRUD application for managing and visualizing money transa
     - **Live Conversion**: View transaction amounts and total sum converted to **EUR**, **USD**, **BYN**, or **RUB** using real-time exchange rates.
 - **Cloud Sync**: Securely save and fetch data using **Firebase Realtime Database** with anonymous authentication.
 - **JSON Export/Import**: Generate or import JSON datasets for flexibility.
+- **Project Scope**: Organize transactions by Project. Toggle between Global view (All Projects) or specific Project views.
+- **Advanced Filtering**: Search by name/type and filter by Date Range in both List and Dashboard views.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
 ## Architecture

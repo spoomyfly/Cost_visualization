@@ -1,4 +1,4 @@
-export const validateAndMap = (data) => {
+export const validateAndMap = (data, defaultProject = 'Budget') => {
     const validTransactions = [];
     const errors = [];
 
@@ -32,7 +32,8 @@ export const validateAndMap = (data) => {
                 ...item,
                 type: normalizedType,
                 id: item.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).substring(2, 15)),
-                amount: parseFloat(item.amount) // Ensure number
+                amount: parseFloat(item.amount), // Ensure number
+                project: item.project || defaultProject
             });
         }
     });

@@ -1,29 +1,60 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
 const Dashboard = ({ transactions }) => {
     const { t } = useLanguage();
-    if (!transactions || transactions.length === 0) {
-        return (
-            <div className="dashboard-container animate-fade-in">
-                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
-                    <h2>{t('noDataAvailable')}</h2>
-                    <p style={{ color: '#94a3b8' }}>{t('noDataDesc')}</p>
-                </div>
-            </div>
-        );
-    }
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const filteredTransactions = useMemo(() => {
+        if (!transactions) return [];
+        let result = transactions;
+        if (startDate || endDate) {
+            result = result.filter(t => {
+                if (!t.date) return false;
+                const [day, month, year] = t.date.split('.').map(Number);
+                const tDate = new Date(2000 + year, month - 1, day).getTime();
+
+                let startOk = true;
+                let endOk = true;
+                if (startDate) {
+                    const [sY, sM, sD] = startDate.split('-').map(Number);
+                    const startTs = new Date(sY, sM - 1, sD).getTime();
+                    startOk = tDate >= startTs;
+                }
+                if (endDate) {
+                    const [eY, eM, eD] = endDate.split('-').map(Number);
+                    const endTs = new Date(eY, eM - 1, eD).getTime();
+                    endOk = tDate <= endTs; // Both are local midnight, so equality works
+                }
+                return startOk && endOk;
+            });
+        }
+        return result;
+    }, [transactions, startDate, endDate]);
 
     const stats = useMemo(() => {
-        const totalSpent = transactions.reduce((sum, item) => sum + item.amount, 0);
-        const avgCheck = transactions.length > 0 ? totalSpent / transactions.length : 0;
+        // If no data matches filter, return empty stats but safe structure
+        if (filteredTransactions.length === 0) {
+            return {
+                totalSpent: 0,
+                avgCheck: 0,
+                totalCount: 0,
+                sortedTypes: [],
+                sortedDaily: [],
+                topExpenses: [],
+                cumulativeData: []
+            };
+        }
+
+        const totalSpent = filteredTransactions.reduce((sum, item) => sum + item.amount, 0);
+        const avgCheck = filteredTransactions.length > 0 ? totalSpent / filteredTransactions.length : 0;
 
         // Type stats
         const typeMap = {};
-        transactions.forEach(item => {
+        filteredTransactions.forEach(item => {
             if (!typeMap[item.type]) {
                 typeMap[item.type] = { total: 0, count: 0 };
             }
@@ -41,7 +72,7 @@ const Dashboard = ({ transactions }) => {
 
         // Daily stats
         const dailyMap = {};
-        transactions.forEach(item => {
+        filteredTransactions.forEach(item => {
             if (!dailyMap[item.date]) {
                 dailyMap[item.date] = 0;
             }
@@ -57,7 +88,7 @@ const Dashboard = ({ transactions }) => {
             });
 
         // Top expenses
-        const topExpenses = [...transactions]
+        const topExpenses = [...filteredTransactions]
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 15);
 
@@ -71,17 +102,31 @@ const Dashboard = ({ transactions }) => {
         return {
             totalSpent,
             avgCheck,
-            totalCount: transactions.length,
+            totalCount: filteredTransactions.length,
             sortedTypes,
             sortedDaily,
             topExpenses,
             cumulativeData
         };
-    }, [transactions]);
+    }, [filteredTransactions]);
+
+    if (!transactions || transactions.length === 0) {
+        return (
+            <div className="dashboard-container animate-fade-in">
+                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
+                    <h2>{t('noDataAvailable')}</h2>
+                    <p style={{ color: '#94a3b8' }}>{t('noDataDesc')}</p>
+                </div>
+            </div>
+        );
+    }
 
     const renderPieChart = () => {
         const total = stats.totalSpent;
-        if (total === 0) return null;
+        if (total === 0) return (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>{t('noDataAvailable')}</div>
+        );
 
         const size = 300;
         const center = size / 2;
@@ -102,12 +147,15 @@ const Dashboard = ({ transactions }) => {
 
             const largeArc = angle > 180 ? 1 : 0;
 
-            const path = [
-                `M ${center} ${center}`,
-                `L ${startX} ${startY}`,
-                `A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`,
-                'Z'
-            ].join(' ');
+            // Handle complete circle case if only 1 item
+            const path = angle === 360
+                ? [`M ${center} ${center - radius}`, `A ${radius} ${radius} 0 1 1 ${center} ${center + radius}`, `A ${radius} ${radius} 0 1 1 ${center} ${center - radius}`, 'Z'].join(' ')
+                : [
+                    `M ${center} ${center}`,
+                    `L ${startX} ${startY}`,
+                    `A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`,
+                    'Z'
+                ].join(' ');
 
             const labelAngle = currentAngle + angle / 2;
             const labelRadius = radius * 0.7;
@@ -169,7 +217,7 @@ const Dashboard = ({ transactions }) => {
 
     const renderCumulativeChart = () => {
         const data = stats.cumulativeData;
-        if (data.length === 0) return null;
+        if (data.length === 0) return <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>{t('noDataAvailable')}</div>;
 
         const width = 600;
         const height = 300;
@@ -248,6 +296,31 @@ const Dashboard = ({ transactions }) => {
 
     return (
         <div className="dashboard-container animate-fade-in">
+            <div className="dashboard-filters" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                <h3>{t('filter')}:</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        title={t('startDate')}
+                    />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        title={t('endDate')}
+                    />
+                </div>
+                {(startDate || endDate) && (
+                    <button className="secondary small" onClick={() => { setStartDate(''); setEndDate(''); }}>
+                        {t('clearFilters')}
+                    </button>
+                )}
+            </div>
+
             <div className="summary-stats">
                 <div className="stat-card">
                     <div className="stat-label">{t('totalExpenses')}</div>

@@ -77,7 +77,19 @@ export const translations = {
         search: "Szukaj...",
         showResults: "Pokaż wyniki",
         noResults: "Nie znaleziono wyników",
-        found: "znaleziono"
+        found: "znaleziono",
+        project: "Projekt",
+        budget: "Budżet",
+        allProjects: "Wszystkie projekty",
+        startDate: "Data od",
+        endDate: "Data do",
+        clearFilters: "Wyczyść filtry",
+        filter: "Filtruj",
+        addProject: "Dodaj projekt",
+        enterProjectName: "Wpisz nazwę projektu:",
+        add: "Dodaj",
+        projectName: "Nazwa projektu",
+        duplicateProject: "Taki projekt już istnieje"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -157,7 +169,19 @@ export const translations = {
         search: "Пошук...",
         showResults: "Показати результати",
         noResults: "Результатів не знайдено",
-        found: "знайдено"
+        found: "знайдено",
+        project: "Проект",
+        budget: "Бюджет",
+        allProjects: "Всі проекти",
+        startDate: "Дата з",
+        endDate: "Дата по",
+        clearFilters: "Очистити фільтри",
+        filter: "Фільтр",
+        addProject: "Додати проект",
+        enterProjectName: "Введіть назву проекту:",
+        add: "Додати",
+        projectName: "Назва проекту",
+        duplicateProject: "Такий проект вже існує"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -237,7 +261,19 @@ export const translations = {
         search: "Поиск...",
         showResults: "Показать результаты",
         noResults: "Результатов не найдено",
-        found: "найдено"
+        found: "найдено",
+        project: "Проект",
+        budget: "Бюджет",
+        allProjects: "Все проекты",
+        startDate: "Дата с",
+        endDate: "Дата по",
+        clearFilters: "Очистить фильтры",
+        filter: "Фильтр",
+        addProject: "Добавить проект",
+        enterProjectName: "Введите название проекта:",
+        add: "Добавить",
+        projectName: "Название проекта",
+        duplicateProject: "Такой проект уже существует"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -317,6 +353,18 @@ export const translations = {
         search: "Search...",
         showResults: "Show results",
         noResults: "No results found",
-        found: "found"
+        found: "found",
+        project: "Project",
+        budget: "Budget",
+        allProjects: "All Projects",
+        startDate: "Start Date",
+        endDate: "End Date",
+        clearFilters: "Clear Filters",
+        filter: "Filter",
+        addProject: "Add Project",
+        enterProjectName: "Enter project name:",
+        add: "Add",
+        projectName: "Project Name",
+        duplicateProject: "Project already exists"
     }
 };

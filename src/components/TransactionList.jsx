@@ -7,41 +7,53 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
-    // Search State
+    // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
-    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const THRESHOLD = 10;
 
     // Filter Logic
     const filteredTransactions = useMemo(() => {
-        if (!searchQuery) return transactions;
-        const lowerQuery = searchQuery.toLowerCase();
-        return transactions.filter(t =>
-            (t.name && t.name.toLowerCase().includes(lowerQuery)) ||
-            (t.type && t.type.toLowerCase().includes(lowerQuery))
-        );
-    }, [transactions, searchQuery]);
+        let result = transactions;
 
-    const searchMatchCount = filteredTransactions.length;
+        // Date Filter
+        if (startDate || endDate) {
+            result = result.filter(t => {
+                if (!t.date) return false;
+                const [day, month, year] = t.date.split('.').map(Number);
+                const tDate = new Date(2000 + year, month - 1, day).getTime();
 
-    // Auto-show if only 1 match
-    React.useEffect(() => {
-        if (searchQuery && searchMatchCount === 1) {
-            setShowSearchResults(true);
-        } else if (!searchQuery) {
-            setShowSearchResults(false);
+                let startOk = true;
+                let endOk = true;
+                if (startDate) {
+                    const [sY, sM, sD] = startDate.split('-').map(Number);
+                    const startTs = new Date(sY, sM - 1, sD).getTime();
+                    startOk = tDate >= startTs;
+                }
+                if (endDate) {
+                    const [eY, eM, eD] = endDate.split('-').map(Number);
+                    const endTs = new Date(eY, eM - 1, eD).getTime();
+                    endOk = tDate <= endTs;
+                }
+                return startOk && endOk;
+            });
         }
-    }, [searchQuery, searchMatchCount]);
+
+        // Search Filter
+        if (searchQuery) {
+            const lowerQuery = searchQuery.toLowerCase();
+            result = result.filter(t =>
+                (t.name && t.name.toLowerCase().includes(lowerQuery)) ||
+                (t.type && t.type.toLowerCase().includes(lowerQuery))
+            );
+        }
+        return result;
+    }, [transactions, searchQuery, startDate, endDate]);
 
     const sortedTransactions = useMemo(() => {
-        // If searching and showing results, use filtered list. Otherwise use full list (unless searching but not showing yet?)
-        // Requirement: "Find by chars, if more than 2 option found, show how many options found. And make option to go to searched options."
-        // This implies we show the FULL list until the user decides to view the search results (or if there's only 1 match).
-
-        const sourceList = showSearchResults ? filteredTransactions : transactions;
-
-        const sortable = [...sourceList];
+        const sortable = [...filteredTransactions];
         sortable.sort((a, b) => {
             if (sortConfig.key === 'amount') {
                 const valA = parseFloat(a.amount) || 0;
@@ -50,6 +62,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
             }
             if (sortConfig.key === 'date') {
                 const parseDate = (d) => {
+                    if (!d) return 0;
                     const [day, month, year] = d.split('.').map(Number);
                     return new Date(2000 + year, month - 1, day).getTime();
                 };
@@ -67,7 +80,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
             return 0;
         });
         return sortable;
-    }, [transactions, filteredTransactions, showSearchResults, sortConfig]);
+    }, [filteredTransactions, sortConfig]);
 
     if (transactions.length === 0) {
         return (
@@ -77,7 +90,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
         );
     }
 
-    const totalSum = transactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const totalSum = filteredTransactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
     const getConvertedAmount = (amountPLN) => {
         if (!displayCurrency || !rates || !rates[displayCurrency]) return null;
@@ -85,41 +98,56 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
         return (amountPLN * rate).toFixed(2);
     };
 
-    // If showing search results, we might want to show all of them, or still paginate?
-    // Let's assume show all for search results, but keep threshold for default view if not expanded.
-    const displayedTransactions = (showSearchResults || isExpanded) ? sortedTransactions : sortedTransactions.slice(0, THRESHOLD);
+    // If filtering, show all results. Else paginate/threshold.
+    const isFiltering = searchQuery || startDate || endDate;
+    const displayedTransactions = (isFiltering || isExpanded) ? sortedTransactions : sortedTransactions.slice(0, THRESHOLD);
 
     return (
         <div className="card animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{ margin: 0 }}>{t('transactions')} ({transactions.length})</h2>
+                <h2 style={{ margin: 0 }}>{t('transactions')} ({filteredTransactions.length})</h2>
 
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {/* Search Input */}
-                    <div className="search-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {/* Filters */}
+                    <div className="filters-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <input
                             type="text"
                             placeholder={t('search') || "Search..."}
                             value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                // If user clears search, go back to full list
-                                if (e.target.value === '') setShowSearchResults(false);
-                                // If user types, we wait for them to click "Show" unless it's 1 match (handled by effect)
-                                if (showSearchResults && e.target.value !== '') setShowSearchResults(false);
-                            }}
-                            style={{ width: '150px', padding: '0.4em' }}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{ width: '120px', padding: '0.4em' }}
                         />
-                        {searchQuery && !showSearchResults && searchMatchCount > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            {/* <label htmlFor="startDate" style={{fontSize: '0.8em'}}>{t('startDate')}</label> */}
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                title={t('startDate')}
+                                style={{ width: 'auto', padding: '0.4em' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            {/* <label htmlFor="endDate" style={{fontSize: '0.8em'}}>{t('endDate')}</label> */}
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                title={t('endDate')}
+                                style={{ width: 'auto', padding: '0.4em' }}
+                            />
+                        </div>
+                        {(searchQuery || startDate || endDate) && (
                             <button
                                 className="secondary small"
-                                onClick={() => setShowSearchResults(true)}
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    setStartDate('');
+                                    setEndDate('');
+                                }}
                             >
-                                {t('showResults') || "Show"} ({searchMatchCount})
+                                {t('clearFilters') || "Clear"}
                             </button>
-                        )}
-                        {searchQuery && !showSearchResults && searchMatchCount === 0 && (
-                            <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>0 {t('found') || "found"}</span>
                         )}
                     </div>
 
@@ -167,6 +195,11 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                                     <div className="transaction-meta">
                                         <span className="transaction-date">{transaction.date}</span>
                                         <span className="transaction-type">{transaction.type}</span>
+                                        {transaction.project && transaction.project !== 'Budget' && (
+                                            <span className="transaction-project" style={{ marginLeft: '0.5rem', fontSize: '0.85em', opacity: 0.7 }}>
+                                                📂 {transaction.project}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div style={{ marginRight: '1rem', textAlign: 'right' }}>
@@ -190,7 +223,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                             </li>
                         );
                     })}
-                    {displayedTransactions.length === 0 && showSearchResults && (
+                    {displayedTransactions.length === 0 && isFiltering && (
                         <li className="transaction-item" style={{ justifyContent: 'center', color: '#94a3b8' }}>
                             {t('noResults') || "No results found"}
                         </li>
@@ -198,7 +231,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                 </ul>
             </div>
 
-            {!showSearchResults && transactions.length > THRESHOLD && (
+            {!isFiltering && transactions.length > THRESHOLD && (
                 <button
                     className="secondary"
                     onClick={() => setIsExpanded(!isExpanded)}
@@ -207,7 +240,6 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                     {isExpanded ? t('showLess') : `${t('showAll')} (${transactions.length})`}
                 </button>
             )}
-
 
             <div style={{
                 marginTop: '1.5rem',

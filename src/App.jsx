@@ -6,6 +6,7 @@ import DataRetrieval from './components/DataRetrieval';
 import Notification from './components/Notification';
 import Dashboard from './components/Dashboard';
 import ConfirmModal from './components/ConfirmModal';
+import InputModal from './components/InputModal';
 import { db, auth } from './services/firebase';
 import { buildTransactionPayload } from './services/requestBuilder';
 import { saveTransactions, fetchTransactions, fetchPublicTransactions } from './services/dbService';
@@ -53,6 +54,40 @@ function App() {
     }
   }, []);
 
+  const [selectedProject, setSelectedProject] = useState('All');
+  const [manualProjects, setManualProjects] = useState([]);
+  const [isInputModalOpen, setIsInputModalOpen] = useState(false);
+
+  const uniqueProjects = useMemo(() => {
+    const projects = transactions.map(t => t.project).filter(Boolean);
+    return ['All', ...new Set([...projects, ...manualProjects])].sort();
+  }, [transactions, manualProjects]);
+
+  const handleAddProject = () => {
+    setIsInputModalOpen(true);
+  };
+
+  const handleConfirmAddProject = (name) => {
+    if (name && !uniqueProjects.includes(name)) {
+      setManualProjects(prev => [...prev, name]);
+      setSelectedProject(name);
+      setNotification({ message: `${t('addProject')}: ${name}`, type: 'success' });
+    } else if (uniqueProjects.includes(name)) {
+      setNotification({ message: t('duplicateProject') || "Project already exists", type: 'error' });
+    }
+    setIsInputModalOpen(false);
+  };
+
+  const filteredTransactions = useMemo(() => {
+    if (selectedProject === 'All') return transactions;
+    return transactions.filter(t => t.project === selectedProject);
+  }, [transactions, selectedProject]);
+
+  useEffect(() => {
+    document.title = selectedProject === 'All' ? t('appTitle') : `${selectedProject} - ${t('appTitle')}`;
+  }, [selectedProject, t]);
+
+
   const loadSharedData = async (uid) => {
     setLoading(true);
     try {
@@ -94,7 +129,8 @@ function App() {
   const handleImportJson = (jsonString) => {
     try {
       const data = JSON.parse(jsonString);
-      const { validTransactions, errors: validationErrors } = validateAndMap(data);
+      const defaultProj = selectedProject === 'All' ? 'Budget' : selectedProject;
+      const { validTransactions, errors: validationErrors } = validateAndMap(data, defaultProj);
 
       if (validTransactions.length > 0) {
         setTransactions(validTransactions);
@@ -197,6 +233,23 @@ function App() {
   return (
     <div className="app-container">
       <div className="header-actions">
+        <div style={{ display: 'flex', alignItems: 'center', marginRight: '1rem' }}>
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="project-switcher"
+            style={{ marginRight: '0.5rem' }}
+          >
+            {uniqueProjects.map(p => (
+              <option key={p} value={p}>
+                {p === 'All' ? t('allProjects') : p}
+              </option>
+            ))}
+          </select>
+          <button className="secondary small" onClick={handleAddProject} title={t('addProject') || "Add Project"}>
+            +
+          </button>
+        </div>
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
@@ -208,7 +261,7 @@ function App() {
           <option value="ru">Русский</option>
         </select>
       </div>
-      <h1>{t('appTitle')}</h1>
+      <h1>{selectedProject === 'All' ? t('appTitle') : selectedProject}</h1>
 
       {notification && (
         <Notification
@@ -256,7 +309,9 @@ function App() {
                 onSave={handleSaveTransaction}
                 editingTransaction={editingTransaction}
                 onCancel={handleCancelEdit}
-                uniqueTypes={uniqueTypes}
+                existingTypes={uniqueTypes}
+                existingProjects={uniqueProjects.filter(p => p !== 'All')}
+                defaultProject={selectedProject === 'All' ? 'Budget' : selectedProject}
               />
             </div>
           )}
@@ -270,7 +325,7 @@ function App() {
                   <DataRetrieval onImport={handleImportJson} />
                 ) : (
                   <TransactionList
-                    transactions={transactions}
+                    transactions={filteredTransactions}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     rates={rates}
@@ -327,7 +382,7 @@ function App() {
               </button>
             </div>
           )}
-          <Dashboard transactions={transactions} />
+          <Dashboard transactions={filteredTransactions} />
         </div>
       )}
 
@@ -337,6 +392,16 @@ function App() {
         message={t('confirmDeleteMsg')}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteId(null)}
+      />
+
+      <InputModal
+        isOpen={isInputModalOpen}
+        title={t('addProject')}
+        message={t('enterProjectName')}
+        onConfirm={handleConfirmAddProject}
+        onCancel={() => setIsInputModalOpen(false)}
+        confirmText={t('add') || 'Add'}
+        placeholder={t('projectName') || 'Project Name'}
       />
     </div>
   );
