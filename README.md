@@ -2,7 +2,7 @@
 
 A modern, React-based CRUD application for managing and visualizing money transactions. Designed with a premium dark mode UI, it allows users to track expenses in PLN and view real-time currency conversions.
 
-[**Live Demo**](https://Spoom.github.io/Cost_visualization)
+[**Live Demo**](https://spoomyfly.github.io/Cost_visualization)
 
 ## Features
 
@@ -18,7 +18,7 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **Currency Support**:
     - Base currency: **PLN (zł)**.
     - **Live Conversion**: View transaction amounts and total sum converted to **EUR**, **USD**, **BYN**, or **RUB** using real-time exchange rates.
-- **Cloud Sync**: Securely save and fetch data using **Firebase Realtime Database** with anonymous authentication.
+- **Cloud Sync**: Securely save and fetch data using **Firebase Realtime Database** with **Google Authentication** (and Anonymous Auth support).
 - **JSON Export/Import**: Generate or import JSON datasets for flexibility.
 - **Project Scope**: Organize transactions by Project. Toggle between Global view (All Projects) or specific Project views.
 - **Advanced Filtering**: Search by name/type and filter by Date Range in both List and Dashboard views.
@@ -31,7 +31,8 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **Database**: Firebase Realtime Database
 - **Authentication**: Firebase Anonymous Auth
 - **Services**:
-  - `dbService.js`: Handles Firebase interactions (Auth, Save, Fetch).
+  - `dbService.js`: Handles Firebase Realtime Database operations (Save, Fetch).
+  - `authService.js`: Manages Firebase Authentication (Google Sign-In, Anonymous Auth).
   - `requestBuilder.js`: Prepares data payloads for API/DB.
   - `dataRetrievalService.js`: Validates and maps imported JSON data.
 - **Config**: `config.js` manages environment variables via `.env`.
@@ -57,7 +58,7 @@ Follow these instructions to set up the project locally from scratch.
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/Spoom/Cost_visualization.git
+    git clone https://github.com/spoomyfly/Cost_visualization.git
     cd Cost_visualization
     ```
 
@@ -102,9 +103,15 @@ Cost_visualization/
 │   │   ├── TransactionForm.jsx  # Form for adding/editing
 │   │   ├── TransactionList.jsx  # List view with conversion logic
 │   │   ├── Dashboard.jsx        # Data visualizations
+│   │   ├── Auth.jsx             # Authentication UI
 │   │   ├── ConfirmModal.jsx     # Custom confirmation dialog
 │   │   └── Notification.jsx     # Toast notifications
 │   ├── services/        # Business logic & API calls
+│   │   ├── authService.js       # Firebase Auth logic
+│   │   ├── dbService.js         # Firebase DB logic
+│   │   └── firebase.js          # Firebase initialization
+│   ├── hooks/           # Custom React hooks
+│   ├── i18n/            # Internationalization (PL, EN, UK, RU)
 │   ├── test/            # Unit & integration tests
 │   ├── App.jsx          # Main application logic & state
 │   ├── main.jsx         # Entry point

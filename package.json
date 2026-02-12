@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://Spoom.github.io/Cost_visualization",
+  "homepage": "https://spoomyfly.github.io/Cost_visualization",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
