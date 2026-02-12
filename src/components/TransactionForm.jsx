@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { formatToDisplayDate, formatToInputDate, parseDisplayDate } from '../utils/dateUtils';
 
 const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes, existingProjects, defaultProject }) => {
   const { t } = useLanguage();
@@ -11,31 +12,11 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
     project: ''
   });
 
-  // Helper to format Date object to DD.MM.YY
-  const formatDateToDisplay = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
-    return `${day}.${month}.${year}`;
-  };
-
-  // Helper to format DD.MM.YY to YYYY-MM-DD for input[type="date"]
-  const formatDateToInput = (displayDate) => {
-    if (!displayDate) return new Date().toISOString().split('T')[0];
-    const parts = displayDate.split('.');
-    if (parts.length !== 3) return '';
-    const [day, month, year] = parts;
-    return `20${year}-${month}-${day}`;
-  };
-
   useEffect(() => {
     if (editingTransaction) {
       setFormData({
         ...editingTransaction,
-        date: formatDateToInput(editingTransaction.date),
+        date: formatToInputDate(parseDisplayDate(editingTransaction.date)),
         project: editingTransaction.project || 'Budget'
       });
     } else {
@@ -62,7 +43,7 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
 
     const amount = parseFloat(formData.amount);
     onSave({
-      date: formatDateToDisplay(formData.date),
+      date: formatToDisplayDate(formData.date),
       name: formData.name,
       amount: isNaN(amount) ? 0 : parseFloat(amount.toFixed(2)),
       type: formData.type,

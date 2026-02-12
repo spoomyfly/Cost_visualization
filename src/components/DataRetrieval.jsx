@@ -47,7 +47,7 @@ const DataRetrieval = ({ onImport }) => {
 
     return (
         <div className="card animate-fade-in" style={{ textAlign: 'center', padding: '2rem' }}>
-            <h3>{t('noDataFound')}</h3>
+            <h3>{t('noDataAvailable')}</h3>
             <p>{t('noDataDesc')}</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
                 <button onClick={() => setIsImporting(true)} className="secondary">

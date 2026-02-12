@@ -17,7 +17,11 @@ vi.mock('firebase/database', () => ({
 }));
 
 vi.mock('firebase/auth', () => ({
-    signInAnonymously: vi.fn()
+    signInAnonymously: vi.fn(),
+    signInWithPopup: vi.fn(),
+    signOut: vi.fn(),
+    onAuthStateChanged: vi.fn(),
+    GoogleAuthProvider: class { }
 }));
 
 describe('dbService', () => {
@@ -27,17 +31,10 @@ describe('dbService', () => {
     });
 
     describe('saveTransactions', () => {
-        it('should login anonymously if not logged in and save data', async () => {
-            const mockUser = { uid: 'test-uid' };
-            signInAnonymously.mockResolvedValue({ user: mockUser });
-            set.mockResolvedValue({ success: true });
-
+        it('should throw if user is not authenticated', async () => {
             const data = [{ id: '1', name: 'Test' }];
-            const result = await saveTransactions(data);
-
-            expect(signInAnonymously).toHaveBeenCalledWith(auth);
-            expect(set).toHaveBeenCalled();
-            expect(result.success).toBe(true);
+            await expect(saveTransactions(data)).rejects.toThrow("User not authenticated");
+            expect(set).not.toHaveBeenCalled();
         });
 
         it('should use current user if already logged in', async () => {

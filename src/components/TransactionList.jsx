@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { filterTransactions, sortTransactions, calculateTotalSum } from '../utils/transactionUtils';
 
 const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
     const { t } = useLanguage();
@@ -14,72 +15,12 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
 
     const THRESHOLD = 10;
 
-    // Filter Logic
     const filteredTransactions = useMemo(() => {
-        let result = transactions;
-
-        // Date Filter
-        if (startDate || endDate) {
-            result = result.filter(t => {
-                if (!t.date) return false;
-                const [day, month, year] = t.date.split('.').map(Number);
-                const tDate = new Date(2000 + year, month - 1, day).getTime();
-
-                let startOk = true;
-                let endOk = true;
-                if (startDate) {
-                    const [sY, sM, sD] = startDate.split('-').map(Number);
-                    const startTs = new Date(sY, sM - 1, sD).getTime();
-                    startOk = tDate >= startTs;
-                }
-                if (endDate) {
-                    const [eY, eM, eD] = endDate.split('-').map(Number);
-                    const endTs = new Date(eY, eM - 1, eD).getTime();
-                    endOk = tDate <= endTs;
-                }
-                return startOk && endOk;
-            });
-        }
-
-        // Search Filter
-        if (searchQuery) {
-            const lowerQuery = searchQuery.toLowerCase();
-            result = result.filter(t =>
-                (t.name && t.name.toLowerCase().includes(lowerQuery)) ||
-                (t.type && t.type.toLowerCase().includes(lowerQuery))
-            );
-        }
-        return result;
+        return filterTransactions(transactions, { searchQuery, startDate, endDate });
     }, [transactions, searchQuery, startDate, endDate]);
 
     const sortedTransactions = useMemo(() => {
-        const sortable = [...filteredTransactions];
-        sortable.sort((a, b) => {
-            if (sortConfig.key === 'amount') {
-                const valA = parseFloat(a.amount) || 0;
-                const valB = parseFloat(b.amount) || 0;
-                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
-            }
-            if (sortConfig.key === 'date') {
-                const parseDate = (d) => {
-                    if (!d) return 0;
-                    const [day, month, year] = d.split('.').map(Number);
-                    return new Date(2000 + year, month - 1, day).getTime();
-                };
-                const valA = parseDate(a.date);
-                const valB = parseDate(b.date);
-                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
-            }
-            if (sortConfig.key === 'type' || sortConfig.key === 'name') {
-                const valA = (a[sortConfig.key] || '').toLowerCase();
-                const valB = (b[sortConfig.key] || '').toLowerCase();
-                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            }
-            return 0;
-        });
-        return sortable;
+        return sortTransactions(filteredTransactions, sortConfig);
     }, [filteredTransactions, sortConfig]);
 
     if (transactions.length === 0) {
@@ -90,7 +31,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
         );
     }
 
-    const totalSum = filteredTransactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const totalSum = calculateTotalSum(filteredTransactions);
 
     const getConvertedAmount = (amountPLN) => {
         if (!displayCurrency || !rates || !rates[displayCurrency]) return null;
@@ -98,7 +39,6 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
         return (amountPLN * rate).toFixed(2);
     };
 
-    // If filtering, show all results. Else paginate/threshold.
     const isFiltering = searchQuery || startDate || endDate;
     const displayedTransactions = (isFiltering || isExpanded) ? sortedTransactions : sortedTransactions.slice(0, THRESHOLD);
 
@@ -108,7 +48,6 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                 <h2 style={{ margin: 0 }}>{t('transactions')} ({filteredTransactions.length})</h2>
 
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {/* Filters */}
                     <div className="filters-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <input
                             type="text"
@@ -117,26 +56,20 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{ width: '120px', padding: '0.4em' }}
                         />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            {/* <label htmlFor="startDate" style={{fontSize: '0.8em'}}>{t('startDate')}</label> */}
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                title={t('startDate')}
-                                style={{ width: 'auto', padding: '0.4em' }}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            {/* <label htmlFor="endDate" style={{fontSize: '0.8em'}}>{t('endDate')}</label> */}
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                title={t('endDate')}
-                                style={{ width: 'auto', padding: '0.4em' }}
-                            />
-                        </div>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            title={t('startDate')}
+                            style={{ width: 'auto', padding: '0.4em' }}
+                        />
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            title={t('endDate')}
+                            style={{ width: 'auto', padding: '0.4em' }}
+                        />
                         {(searchQuery || startDate || endDate) && (
                             <button
                                 className="secondary small"
@@ -182,9 +115,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                 </div>
             </div>
 
-            <div
-                className="transaction-scroll-container"
-            >
+            <div className="transaction-scroll-container">
                 <ul className="transaction-list">
                     {displayedTransactions.map((transaction) => {
                         const converted = getConvertedAmount(transaction.amount);
