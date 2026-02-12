@@ -12,6 +12,7 @@ import { filterTransactions, getUniqueValues } from './utils/transactionUtils';
 import { useLanguage } from './i18n/LanguageContext';
 import Auth from './components/Auth';
 import { loginAnonymously } from './services/authService';
+import { buildTransactionPayload } from './services/requestBuilder';
 import { useTransactions } from './hooks/useTransactions';
 import { useRates } from './hooks/useRates';
 import { useProjects } from './hooks/useProjects';
@@ -97,7 +98,6 @@ function App() {
   };
 
   const generateJson = () => {
-    const { buildTransactionPayload } = import.meta.glob('./services/requestBuilder', { eager: true })['./services/requestBuilder'];
     const output = buildTransactionPayload(transactions);
     setJsonOutput(JSON.stringify(output, null, 2));
     setIsJsonExpanded(false);
