@@ -21,7 +21,7 @@ If you are running the app locally or on a custom domain:
 
 ## 3. App Config (Optional but Recommended)
 
-Ensure your `src/config.js` properly exports the necessary Firebase configuration. The infrastructure I'm building uses `auth` from `src/services/firebase.js`.
+Ensure your `src/config.js` properly exports the necessary Firebase configuration. The infrastructure uses `auth` from `src/services/firebase.js` and logical methods from `src/services/authService.js`.
 
 ## 4. How it works in the app
 
