@@ -7,6 +7,7 @@ import Notification from './components/Notification';
 import Dashboard from './components/Dashboard';
 import ConfirmModal from './components/ConfirmModal';
 import InputModal from './components/InputModal';
+import ProjectSelectionModal from './components/ProjectSelectionModal';
 import { auth } from './services/firebase';
 import { filterTransactions, getUniqueValues } from './utils/transactionUtils';
 import { useLanguage } from './i18n/LanguageContext';
@@ -23,6 +24,7 @@ function App() {
   const [activeView, setActiveView] = useState('transactions'); // 'transactions' or 'dashboard'
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [transferIds, setTransferIds] = useState(null);
   const [isSharedView, setIsSharedView] = useState(false);
   const [jsonOutput, setJsonOutput] = useState('');
   const [isJsonExpanded, setIsJsonExpanded] = useState(false);
@@ -39,6 +41,7 @@ function App() {
     loadSharedData,
     saveTransaction,
     deleteTransaction,
+    transferTransactions,
     saveToCloud,
     importJson
   } = useTransactions(setNotification, t);
@@ -95,6 +98,12 @@ function App() {
     if (editingId === deleteId) setEditingId(null);
     setDeleteId(null);
     setNotification({ message: t('deleteSuccess') || 'Transaction deleted successfully', type: 'success' });
+  };
+
+  const confirmTransfer = (targetProject) => {
+    if (!transferIds || !targetProject) return;
+    transferTransactions(transferIds, targetProject);
+    setTransferIds(null);
   };
 
   const generateJson = () => {
@@ -212,6 +221,7 @@ function App() {
                     transactions={filteredTransactions}
                     onEdit={handleEdit}
                     onDelete={setDeleteId}
+                    onTransfer={setTransferIds}
                     rates={rates}
                   />
                 )}
@@ -283,6 +293,16 @@ function App() {
         onCancel={() => setIsInputModalOpen(false)}
         confirmText={t('add') || 'Add'}
         placeholder={t('projectName') || 'Project Name'}
+      />
+
+      <ProjectSelectionModal
+        isOpen={!!transferIds}
+        title={t('transferSelected')}
+        message={t('selectTargetProject')}
+        projects={uniqueProjects.filter(p => p !== 'All' && p !== selectedProject)}
+        onConfirm={confirmTransfer}
+        onCancel={() => setTransferIds(null)}
+        confirmText={t('confirm')}
       />
     </div>
   );

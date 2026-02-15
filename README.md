@@ -22,6 +22,7 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **JSON Export/Import**: Generate or import JSON datasets for flexibility.
 - **Project Scope**: Organize transactions by Project. Toggle between Global view (All Projects) or specific Project views.
 - **Advanced Filtering**: Search by name/type and filter by Date Range in both List and Dashboard views.
+- **Bulk Actions**: Select multiple transactions to transfer them between projects in one click.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
 ## Architecture
@@ -105,6 +106,7 @@ Cost_visualization/
 │   │   ├── Dashboard.jsx        # Data visualizations
 │   │   ├── Auth.jsx             # Authentication UI
 │   │   ├── ConfirmModal.jsx     # Custom confirmation dialog
+│   │   ├── ProjectSelectionModal.jsx # Selection dialog for bulk transfers
 │   │   └── Notification.jsx     # Toast notifications
 │   ├── services/        # Business logic & API calls
 │   │   ├── authService.js       # Firebase Auth logic

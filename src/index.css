@@ -148,6 +148,74 @@ select:focus {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.transaction-checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-right: 1.25rem;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Hide default checkbox */
+.transaction-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transaction-checkbox:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.transaction-checkbox:checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.transaction-checkbox:hover {
+  border-color: var(--primary-color);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.transaction-selection-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  font-size: 0.95em;
+  color: var(--text-color);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.transaction-item.selected {
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+.transfer-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .transaction-details {
   text-align: left;
   flex-grow: 1;

@@ -18,11 +18,12 @@ export const useProjects = (transactions, t, setNotification) => {
     };
 
     const confirmAddProject = useCallback((name) => {
-        if (name && !uniqueProjects.includes(name)) {
-            setManualProjects(prev => [...prev, name]);
-            setSelectedProject(name);
-            if (setNotification) setNotification({ message: `${t('addProject')}: ${name}`, type: 'success' });
-        } else if (uniqueProjects.includes(name)) {
+        const trimmedName = name?.trim();
+        if (trimmedName && !uniqueProjects.includes(trimmedName)) {
+            setManualProjects(prev => [...prev, trimmedName]);
+            setSelectedProject(trimmedName);
+            if (setNotification) setNotification({ message: `${t('addProject')}: ${trimmedName}`, type: 'success' });
+        } else if (trimmedName && uniqueProjects.includes(trimmedName)) {
             if (setNotification) setNotification({ message: t('duplicateProject') || "Project already exists", type: 'error' });
         }
         setIsInputModalOpen(false);

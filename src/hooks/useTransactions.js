@@ -107,6 +107,36 @@ export const useTransactions = (setNotification, t) => {
         }
     }, [setNotification, t]);
 
+    const transferTransactions = useCallback(async (ids, targetProject) => {
+        if (!ids || ids.length === 0 || !targetProject) return;
+
+        // Sanitize target project name
+        const sanitizedProject = targetProject.trim();
+        if (!sanitizedProject) return;
+
+        setTransactions(prev => {
+            // Find valid IDs that actually exist in the current set
+            const existingIds = new Set(prev.map(t => t.id));
+            const validIds = ids.filter(id => existingIds.has(id));
+
+            if (validIds.length === 0) return prev;
+
+            const newTransactions = prev.map(t =>
+                validIds.includes(t.id) ? { ...t, project: sanitizedProject } : t
+            );
+            // Save to cloud after local update
+            saveToCloud(newTransactions);
+            return newTransactions;
+        });
+
+        if (setNotification) {
+            setNotification({
+                message: t('transferSuccess', { count: ids.length, project: sanitizedProject }),
+                type: 'success'
+            });
+        }
+    }, [saveToCloud, setNotification, t]);
+
     return {
         transactions,
         setTransactions,
@@ -119,6 +149,7 @@ export const useTransactions = (setNotification, t) => {
         loadSharedData,
         saveTransaction,
         deleteTransaction,
+        transferTransactions,
         saveToCloud,
         importJson
     };

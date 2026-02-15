@@ -94,7 +94,12 @@ export const translations = {
         signInWithGoogle: "Zaloguj przez Google",
         logout: "Wyloguj",
         equalSplit: "Równy podział",
-        fullAttribution: "Pełna atrybucja"
+        fullAttribution: "Pełna atrybucja",
+        transferSelected: "Przenieś zaznaczone",
+        selectTargetProject: "Wybierz projekt docelowy",
+        transferSuccess: "Pomyślnie przeniesiono {{count}} transakcji do {{project}}!",
+        selectAll: "Zaznacz wszystkie",
+        noProjectSelected: "Wybierz projekt"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -191,7 +196,12 @@ export const translations = {
         signInWithGoogle: "Sign in with Google",
         logout: "Logout",
         equalSplit: "Equal Split",
-        fullAttribution: "Full Attribution"
+        fullAttribution: "Full Attribution",
+        transferSelected: "Transfer Selected",
+        selectTargetProject: "Select Target Project",
+        transferSuccess: "Successfully transferred {{count}} transactions to {{project}}!",
+        selectAll: "Select All",
+        noProjectSelected: "Select a project"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -288,7 +298,12 @@ export const translations = {
         signInWithGoogle: "Увійти за допомогою Google",
         logout: "Вийти",
         equalSplit: "Рівномірний розподіл",
-        fullAttribution: "Повна атрибуція"
+        fullAttribution: "Повна атрибуція",
+        transferSelected: "Перенести виділені",
+        selectTargetProject: "Виберіть цільовий проект",
+        transferSuccess: "Успішно перенесено {{count}} транзакцій до {{project}}!",
+        selectAll: "Виділити все",
+        noProjectSelected: "Виберіть проект"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -385,6 +400,11 @@ export const translations = {
         signInWithGoogle: "Войти через Google",
         logout: "Выйти",
         equalSplit: "Равномерное распределение",
-        fullAttribution: "Полная атрибуция"
+        fullAttribution: "Полная атрибуция",
+        transferSelected: "Перенести выбранные",
+        selectTargetProject: "Выберите целевой проект",
+        transferSuccess: "Успешно переносено {{count}} транзакций в {{project}}!",
+        selectAll: "Выбрать все",
+        noProjectSelected: "Выберите проект"
     }
 };

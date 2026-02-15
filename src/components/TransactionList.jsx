@@ -2,11 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { filterTransactions, sortTransactions, calculateTotalSum } from '../utils/transactionUtils';
 
-const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
+const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) => {
     const { t } = useLanguage();
     const [displayCurrency, setDisplayCurrency] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+    const [selectedIds, setSelectedIds] = useState([]);
 
     // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,14 +24,6 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
         return sortTransactions(filteredTransactions, sortConfig);
     }, [filteredTransactions, sortConfig]);
 
-    if (transactions.length === 0) {
-        return (
-            <div className="card animate-fade-in" style={{ textAlign: 'center', color: '#94a3b8' }}>
-                <p>{t('noTransactions')}</p>
-            </div>
-        );
-    }
-
     const totalSum = calculateTotalSum(filteredTransactions);
 
     const getConvertedAmount = (amountPLN) => {
@@ -41,6 +34,28 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
 
     const isFiltering = searchQuery || startDate || endDate;
     const displayedTransactions = (isFiltering || isExpanded) ? sortedTransactions : sortedTransactions.slice(0, THRESHOLD);
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(displayedTransactions.map(t => t.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectOne = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    if (transactions.length === 0) {
+        return (
+            <div className="card animate-fade-in" style={{ textAlign: 'center', color: '#94a3b8' }}>
+                <p>{t('noTransactions')}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="card animate-fade-in">
@@ -115,12 +130,46 @@ const TransactionList = ({ transactions, onEdit, onDelete, rates }) => {
                 </div>
             </div>
 
+            {displayedTransactions.length > 0 && (
+                <div className="transaction-selection-header">
+                    <div className="transaction-checkbox-container">
+                        <input
+                            type="checkbox"
+                            className="transaction-checkbox"
+                            checked={selectedIds.length === displayedTransactions.length && displayedTransactions.length > 0}
+                            onChange={handleSelectAll}
+                            title={t('selectAll')}
+                        />
+                        <span style={{ marginLeft: '0.5rem' }}>{t('selectAll')}</span>
+                    </div>
+                    {selectedIds.length > 0 && (
+                        <div className="transfer-actions">
+                            <button
+                                className="primary small"
+                                onClick={() => onTransfer(selectedIds)}
+                            >
+                                📂 {t('transferSelected')} ({selectedIds.length})
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="transaction-scroll-container">
                 <ul className="transaction-list">
                     {displayedTransactions.map((transaction) => {
                         const converted = getConvertedAmount(transaction.amount);
+                        const isSelected = selectedIds.includes(transaction.id);
                         return (
-                            <li key={transaction.id} className="transaction-item">
+                            <li key={transaction.id} className={`transaction-item ${isSelected ? 'selected' : ''}`}>
+                                <div className="transaction-checkbox-container">
+                                    <input
+                                        type="checkbox"
+                                        className="transaction-checkbox"
+                                        checked={isSelected}
+                                        onChange={() => handleSelectOne(transaction.id)}
+                                    />
+                                </div>
                                 <div className="transaction-details">
                                     <div className="transaction-name">{transaction.name}</div>
                                     <div className="transaction-meta">
