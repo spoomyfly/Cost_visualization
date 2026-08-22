@@ -65,6 +65,23 @@ button:active {
   transform: translateY(0);
 }
 
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+button:disabled:hover {
+  background-color: var(--primary-color);
+  transform: none;
+  box-shadow: none;
+}
+
+button.secondary:disabled:hover {
+  background-color: var(--secondary-color);
+}
+
 button.secondary {
   background-color: var(--secondary-color);
 }

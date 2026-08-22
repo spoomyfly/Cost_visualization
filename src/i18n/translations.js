@@ -99,7 +99,11 @@ export const translations = {
         selectTargetProject: "Wybierz projekt docelowy",
         transferSuccess: "Pomyślnie przeniesiono {{count}} transakcji do {{project}}!",
         selectAll: "Zaznacz wszystkie",
-        noProjectSelected: "Wybierz projekt"
+        noProjectSelected: "Wybierz projekt",
+        itemsPerPage: "Pozycji na stronę",
+        page: "Strona",
+        previous: "Poprzednia",
+        next: "Następna"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -201,7 +205,11 @@ export const translations = {
         selectTargetProject: "Select Target Project",
         transferSuccess: "Successfully transferred {{count}} transactions to {{project}}!",
         selectAll: "Select All",
-        noProjectSelected: "Select a project"
+        noProjectSelected: "Select a project",
+        itemsPerPage: "Items per page",
+        page: "Page",
+        previous: "Previous",
+        next: "Next"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -303,7 +311,11 @@ export const translations = {
         selectTargetProject: "Виберіть цільовий проект",
         transferSuccess: "Успішно перенесено {{count}} транзакцій до {{project}}!",
         selectAll: "Виділити все",
-        noProjectSelected: "Виберіть проект"
+        noProjectSelected: "Виберіть проект",
+        itemsPerPage: "Позицій на сторінку",
+        page: "Сторінка",
+        previous: "Попередня",
+        next: "Наступна"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -405,6 +417,10 @@ export const translations = {
         selectTargetProject: "Выберите целевой проект",
         transferSuccess: "Успешно переносено {{count}} транзакций в {{project}}!",
         selectAll: "Выбрать все",
-        noProjectSelected: "Выберите проект"
+        noProjectSelected: "Выберите проект",
+        itemsPerPage: "Позиций на странице",
+        page: "Страница",
+        previous: "Предыдущая",
+        next: "Следующая"
     }
 };

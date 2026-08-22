@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { filterTransactions, sortTransactions, calculateTotalSum } from '../utils/transactionUtils';
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
 const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) => {
     const { t } = useLanguage();
     const [displayCurrency, setDisplayCurrency] = useState('');
-    const [isExpanded, setIsExpanded] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [selectedIds, setSelectedIds] = useState([]);
 
@@ -14,7 +15,9 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const THRESHOLD = 10;
+    // Pagination State
+    const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const filteredTransactions = useMemo(() => {
         return filterTransactions(transactions, { searchQuery, startDate, endDate });
@@ -33,7 +36,16 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
     };
 
     const isFiltering = searchQuery || startDate || endDate;
-    const displayedTransactions = (isFiltering || isExpanded) ? sortedTransactions : sortedTransactions.slice(0, THRESHOLD);
+
+    const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / pageSize));
+    // Clamp instead of syncing via effect, so a shrinking result set (filter, delete, page size
+    // change) never leaves the view on a page that no longer exists.
+    const currentPageInRange = Math.min(currentPage, totalPages);
+
+    const displayedTransactions = useMemo(() => {
+        const start = (currentPageInRange - 1) * pageSize;
+        return sortedTransactions.slice(start, start + pageSize);
+    }, [sortedTransactions, currentPageInRange, pageSize]);
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -68,20 +80,20 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                             type="text"
                             placeholder={t('search') || "Search..."}
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                             style={{ width: '120px', padding: '0.4em' }}
                         />
                         <input
                             type="date"
                             value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
+                            onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
                             title={t('startDate')}
                             style={{ width: 'auto', padding: '0.4em' }}
                         />
                         <input
                             type="date"
                             value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
                             title={t('endDate')}
                             style={{ width: 'auto', padding: '0.4em' }}
                         />
@@ -92,6 +104,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                                     setSearchQuery('');
                                     setStartDate('');
                                     setEndDate('');
+                                    setCurrentPage(1);
                                 }}
                             >
                                 {t('clearFilters') || "Clear"}
@@ -104,6 +117,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                         onChange={(e) => {
                             const [key, direction] = e.target.value.split('-');
                             setSortConfig({ key, direction });
+                            setCurrentPage(1);
                         }}
                         style={{ width: 'auto', padding: '0.4em' }}
                     >
@@ -211,14 +225,39 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                 </ul>
             </div>
 
-            {!isFiltering && transactions.length > THRESHOLD && (
-                <button
-                    className="secondary"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    style={{ width: '100%', marginTop: '1rem' }}
-                >
-                    {isExpanded ? t('showLess') : `${t('showAll')} (${transactions.length})`}
-                </button>
+            {sortedTransactions.length > 0 && (
+                <div className="pagination-container">
+                    <div className="page-size-selector">
+                        <span>{t('itemsPerPage')}:</span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                        >
+                            {PAGE_SIZE_OPTIONS.map(size => (
+                                <option key={size} value={size}>{size}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="pagination-controls">
+                        <button
+                            className="secondary small"
+                            onClick={() => setCurrentPage(p => Math.max(1, Math.min(totalPages, p) - 1))}
+                            disabled={currentPageInRange === 1}
+                        >
+                            ← {t('previous')}
+                        </button>
+                        <span className="pagination-info">
+                            {t('page')} {currentPageInRange} / {totalPages}
+                        </span>
+                        <button
+                            className="secondary small"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPageInRange === totalPages}
+                        >
+                            {t('next')} →
+                        </button>
+                    </div>
+                </div>
             )}
 
             <div style={{
