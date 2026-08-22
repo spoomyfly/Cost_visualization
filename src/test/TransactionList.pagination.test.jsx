@@ -24,6 +24,12 @@ const makeTransactions = (count) =>
         project: 'Budget'
     }));
 
+const getPageInput = () => screen.getByLabelText('Przejdź do strony');
+const expectPage = (current, total) => {
+    expect(getPageInput()).toHaveValue(current);
+    expect(screen.getByText(`/ ${total}`)).toBeInTheDocument();
+};
+
 describe('TransactionList pagination', () => {
     const noop = () => {};
 
@@ -32,7 +38,7 @@ describe('TransactionList pagination', () => {
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        expect(screen.getByText('Strona 1 / 3')).toBeInTheDocument();
+        expectPage(1, 3);
         expect(screen.getAllByRole('listitem')).toHaveLength(10);
     });
 
@@ -43,25 +49,84 @@ describe('TransactionList pagination', () => {
 
         const nextButton = screen.getByRole('button', { name: /Następna/i });
         fireEvent.click(nextButton);
-        expect(screen.getByText('Strona 2 / 3')).toBeInTheDocument();
+        expectPage(2, 3);
 
         fireEvent.click(nextButton);
-        expect(screen.getByText('Strona 3 / 3')).toBeInTheDocument();
+        expectPage(3, 3);
         // Last page only has 5 remaining items
         expect(screen.getAllByRole('listitem')).toHaveLength(5);
         expect(nextButton).toBeDisabled();
 
         const prevButton = screen.getByRole('button', { name: /Poprzednia/i });
         fireEvent.click(prevButton);
-        expect(screen.getByText('Strona 2 / 3')).toBeInTheDocument();
+        expectPage(2, 3);
     });
 
-    it('disables the previous button on the first page', () => {
+    it('disables the previous and first-page buttons on the first page, and next/last on the last page', () => {
         renderWithLanguage(
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
         expect(screen.getByRole('button', { name: /Poprzednia/i })).toBeDisabled();
+        expect(screen.getByTitle('Pierwsza strona')).toBeDisabled();
+        expect(screen.getByRole('button', { name: /Następna/i })).not.toBeDisabled();
+        expect(screen.getByTitle('Ostatnia strona')).not.toBeDisabled();
+
+        fireEvent.click(screen.getByTitle('Ostatnia strona'));
+        expectPage(3, 3);
+        expect(screen.getByRole('button', { name: /Następna/i })).toBeDisabled();
+        expect(screen.getByTitle('Ostatnia strona')).toBeDisabled();
+        expect(screen.getByRole('button', { name: /Poprzednia/i })).not.toBeDisabled();
+        expect(screen.getByTitle('Pierwsza strona')).not.toBeDisabled();
+    });
+
+    it('jumps to the first and last page', () => {
+        renderWithLanguage(
+            <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
+        );
+
+        fireEvent.click(screen.getByTitle('Ostatnia strona'));
+        expectPage(3, 3);
+
+        fireEvent.click(screen.getByTitle('Pierwsza strona'));
+        expectPage(1, 3);
+    });
+
+    it('jumps to a specific page typed into the page input', () => {
+        renderWithLanguage(
+            <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
+        );
+
+        const pageInput = getPageInput();
+        fireEvent.change(pageInput, { target: { value: '2' } });
+        fireEvent.blur(pageInput);
+
+        expectPage(2, 3);
+        expect(screen.getByText('Transaction 11')).toBeInTheDocument();
+    });
+
+    it('commits the page input on Enter', () => {
+        renderWithLanguage(
+            <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
+        );
+
+        const pageInput = getPageInput();
+        fireEvent.change(pageInput, { target: { value: '3' } });
+        fireEvent.keyDown(pageInput, { key: 'Enter' });
+
+        expectPage(3, 3);
+    });
+
+    it('clamps an out-of-range page number typed into the page input', () => {
+        renderWithLanguage(
+            <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
+        );
+
+        const pageInput = getPageInput();
+        fireEvent.change(pageInput, { target: { value: '99' } });
+        fireEvent.blur(pageInput);
+
+        expectPage(3, 3);
     });
 
     it('changes page size and resets to the first page', () => {
@@ -70,12 +135,12 @@ describe('TransactionList pagination', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { name: /Następna/i }));
-        expect(screen.getByText('Strona 2 / 3')).toBeInTheDocument();
+        expectPage(2, 3);
 
         const pageSizeSelect = screen.getByDisplayValue('10');
         fireEvent.change(pageSizeSelect, { target: { value: '25' } });
 
-        expect(screen.getByText('Strona 1 / 1')).toBeInTheDocument();
+        expectPage(1, 1);
         expect(screen.getAllByRole('listitem')).toHaveLength(25);
     });
 
@@ -85,13 +150,13 @@ describe('TransactionList pagination', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { name: /Następna/i }));
-        expect(screen.getByText('Strona 2 / 3')).toBeInTheDocument();
+        expectPage(2, 3);
 
         const searchInput = screen.getByPlaceholderText('Szukaj...');
         // "Transaction 5" only matches a single item among ids 1-25 (no "50"-"59")
         fireEvent.change(searchInput, { target: { value: 'Transaction 5' } });
 
-        expect(screen.getByText('Strona 1 / 1')).toBeInTheDocument();
+        expectPage(1, 1);
     });
 
     it('does not render pagination controls when there are no transactions', () => {
@@ -99,7 +164,7 @@ describe('TransactionList pagination', () => {
             <TransactionList transactions={[]} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        expect(screen.queryByText(/Strona/)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Przejdź do strony')).not.toBeInTheDocument();
     });
 
     it('calls onTransfer with the selected ids from the current page only', () => {

@@ -18,6 +18,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
     // Pagination State
     const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageInputValue, setPageInputValue] = useState('');
 
     const filteredTransactions = useMemo(() => {
         return filterTransactions(transactions, { searchQuery, startDate, endDate });
@@ -46,6 +47,19 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
         const start = (currentPageInRange - 1) * pageSize;
         return sortedTransactions.slice(start, start + pageSize);
     }, [sortedTransactions, currentPageInRange, pageSize]);
+
+    const goToPage = (page) => {
+        setCurrentPage(Math.min(totalPages, Math.max(1, page)));
+    };
+
+    const commitPageInput = () => {
+        if (pageInputValue === '') return;
+        const parsed = Number(pageInputValue);
+        if (!Number.isNaN(parsed)) {
+            goToPage(Math.trunc(parsed));
+        }
+        setPageInputValue('');
+    };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -241,20 +255,51 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                     <div className="pagination-controls">
                         <button
                             className="secondary small"
-                            onClick={() => setCurrentPage(p => Math.max(1, Math.min(totalPages, p) - 1))}
+                            onClick={() => goToPage(1)}
+                            disabled={currentPageInRange === 1}
+                            title={t('firstPage')}
+                        >
+                            «
+                        </button>
+                        <button
+                            className="secondary small"
+                            onClick={() => goToPage(currentPageInRange - 1)}
                             disabled={currentPageInRange === 1}
                         >
                             ← {t('previous')}
                         </button>
                         <span className="pagination-info">
-                            {t('page')} {currentPageInRange} / {totalPages}
+                            <span>{t('page')}</span>
+                            <input
+                                type="number"
+                                className="pagination-page-input"
+                                min={1}
+                                max={totalPages}
+                                value={pageInputValue !== '' ? pageInputValue : currentPageInRange}
+                                onChange={(e) => setPageInputValue(e.target.value)}
+                                onBlur={commitPageInput}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') e.currentTarget.blur();
+                                }}
+                                title={t('goToPage')}
+                                aria-label={t('goToPage')}
+                            />
+                            <span>{`/ ${totalPages}`}</span>
                         </span>
                         <button
                             className="secondary small"
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            onClick={() => goToPage(currentPageInRange + 1)}
                             disabled={currentPageInRange === totalPages}
                         >
                             {t('next')} →
+                        </button>
+                        <button
+                            className="secondary small"
+                            onClick={() => goToPage(totalPages)}
+                            disabled={currentPageInRange === totalPages}
+                            title={t('lastPage')}
+                        >
+                            »
                         </button>
                     </div>
                 </div>

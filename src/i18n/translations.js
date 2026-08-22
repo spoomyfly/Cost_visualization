@@ -103,7 +103,10 @@ export const translations = {
         itemsPerPage: "Pozycji na stronę",
         page: "Strona",
         previous: "Poprzednia",
-        next: "Następna"
+        next: "Następna",
+        firstPage: "Pierwsza strona",
+        lastPage: "Ostatnia strona",
+        goToPage: "Przejdź do strony"
     },
     en: {
         appTitle: "Cost Visualization",
@@ -209,7 +212,10 @@ export const translations = {
         itemsPerPage: "Items per page",
         page: "Page",
         previous: "Previous",
-        next: "Next"
+        next: "Next",
+        firstPage: "First page",
+        lastPage: "Last page",
+        goToPage: "Go to page"
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -315,7 +321,10 @@ export const translations = {
         itemsPerPage: "Позицій на сторінку",
         page: "Сторінка",
         previous: "Попередня",
-        next: "Наступна"
+        next: "Наступна",
+        firstPage: "Перша сторінка",
+        lastPage: "Остання сторінка",
+        goToPage: "Перейти до сторінки"
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -421,6 +430,9 @@ export const translations = {
         itemsPerPage: "Позиций на странице",
         page: "Страница",
         previous: "Предыдущая",
-        next: "Следующая"
+        next: "Следующая",
+        firstPage: "Первая страница",
+        lastPage: "Последняя страница",
+        goToPage: "Перейти на страницу"
     }
 };
