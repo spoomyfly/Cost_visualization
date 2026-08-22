@@ -18,6 +18,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
     // Pagination State
     const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isEditingPage, setIsEditingPage] = useState(false);
     const [pageInputValue, setPageInputValue] = useState('');
 
     const filteredTransactions = useMemo(() => {
@@ -52,12 +53,17 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
         setCurrentPage(Math.min(totalPages, Math.max(1, page)));
     };
 
+    const startEditingPage = () => {
+        setPageInputValue(String(currentPageInRange));
+        setIsEditingPage(true);
+    };
+
     const commitPageInput = () => {
-        if (pageInputValue === '') return;
         const parsed = Number(pageInputValue);
-        if (!Number.isNaN(parsed)) {
+        if (pageInputValue !== '' && !Number.isNaN(parsed)) {
             goToPage(Math.trunc(parsed));
         }
+        setIsEditingPage(false);
         setPageInputValue('');
     };
 
@@ -253,14 +259,15 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                         </select>
                     </div>
                     <div className="pagination-controls">
-                        <button
-                            className="secondary small"
-                            onClick={() => goToPage(1)}
-                            disabled={currentPageInRange === 1}
-                            title={t('firstPage')}
-                        >
-                            «
-                        </button>
+                        {currentPageInRange > 1 && (
+                            <button
+                                className="secondary small"
+                                onClick={() => goToPage(1)}
+                                title={t('firstPage')}
+                            >
+                                «
+                            </button>
+                        )}
                         <button
                             className="secondary small"
                             onClick={() => goToPage(currentPageInRange - 1)}
@@ -270,20 +277,34 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                         </button>
                         <span className="pagination-info">
                             <span>{t('page')}</span>
-                            <input
-                                type="number"
-                                className="pagination-page-input"
-                                min={1}
-                                max={totalPages}
-                                value={pageInputValue !== '' ? pageInputValue : currentPageInRange}
-                                onChange={(e) => setPageInputValue(e.target.value)}
-                                onBlur={commitPageInput}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') e.currentTarget.blur();
-                                }}
-                                title={t('goToPage')}
-                                aria-label={t('goToPage')}
-                            />
+                            {isEditingPage ? (
+                                <input
+                                    type="number"
+                                    className="pagination-page-input"
+                                    min={1}
+                                    max={totalPages}
+                                    value={pageInputValue}
+                                    autoFocus
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={(e) => setPageInputValue(e.target.value)}
+                                    onBlur={commitPageInput}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') e.currentTarget.blur();
+                                        if (e.key === 'Escape') { setIsEditingPage(false); setPageInputValue(''); }
+                                    }}
+                                    title={t('goToPage')}
+                                    aria-label={t('goToPage')}
+                                />
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="pagination-page-number"
+                                    onClick={startEditingPage}
+                                    title={t('goToPage')}
+                                >
+                                    {currentPageInRange}
+                                </button>
+                            )}
                             <span>{`/ ${totalPages}`}</span>
                         </span>
                         <button
@@ -293,14 +314,15 @@ const TransactionList = ({ transactions, onEdit, onDelete, onTransfer, rates }) 
                         >
                             {t('next')} →
                         </button>
-                        <button
-                            className="secondary small"
-                            onClick={() => goToPage(totalPages)}
-                            disabled={currentPageInRange === totalPages}
-                            title={t('lastPage')}
-                        >
-                            »
-                        </button>
+                        {currentPageInRange < totalPages && (
+                            <button
+                                className="secondary small"
+                                onClick={() => goToPage(totalPages)}
+                                title={t('lastPage')}
+                            >
+                                »
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

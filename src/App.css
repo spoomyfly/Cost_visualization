@@ -126,6 +126,25 @@
   color: var(--text-color);
 }
 
+.pagination-page-number {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 1em;
+  padding: 0.2em 0.6em;
+  border-radius: 6px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.pagination-page-number:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-color);
+  transform: none;
+  box-shadow: none;
+}
+
 /* Search Container */
 .search-container input {
   background: rgba(0, 0, 0, 0.2);

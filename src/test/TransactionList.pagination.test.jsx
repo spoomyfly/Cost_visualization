@@ -24,10 +24,16 @@ const makeTransactions = (count) =>
         project: 'Budget'
     }));
 
-const getPageInput = () => screen.getByLabelText('Przejdź do strony');
+// The current page is shown as a plain number (a "Przejdź do strony" labeled
+// button) until clicked, at which point it turns into the same-labeled input.
 const expectPage = (current, total) => {
-    expect(getPageInput()).toHaveValue(current);
+    expect(screen.getByTitle('Przejdź do strony')).toHaveTextContent(String(current));
     expect(screen.getByText(`/ ${total}`)).toBeInTheDocument();
+};
+
+const openPageInput = () => {
+    fireEvent.click(screen.getByTitle('Przejdź do strony'));
+    return screen.getByLabelText('Przejdź do strony');
 };
 
 describe('TransactionList pagination', () => {
@@ -62,22 +68,21 @@ describe('TransactionList pagination', () => {
         expectPage(2, 3);
     });
 
-    it('disables the previous and first-page buttons on the first page, and next/last on the last page', () => {
+    it('hides the first-page button on the first page and the last-page button on the last page', () => {
         renderWithLanguage(
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
         expect(screen.getByRole('button', { name: /Poprzednia/i })).toBeDisabled();
-        expect(screen.getByTitle('Pierwsza strona')).toBeDisabled();
-        expect(screen.getByRole('button', { name: /Następna/i })).not.toBeDisabled();
-        expect(screen.getByTitle('Ostatnia strona')).not.toBeDisabled();
+        expect(screen.queryByTitle('Pierwsza strona')).not.toBeInTheDocument();
+        expect(screen.getByTitle('Ostatnia strona')).toBeInTheDocument();
 
         fireEvent.click(screen.getByTitle('Ostatnia strona'));
         expectPage(3, 3);
+
         expect(screen.getByRole('button', { name: /Następna/i })).toBeDisabled();
-        expect(screen.getByTitle('Ostatnia strona')).toBeDisabled();
-        expect(screen.getByRole('button', { name: /Poprzednia/i })).not.toBeDisabled();
-        expect(screen.getByTitle('Pierwsza strona')).not.toBeDisabled();
+        expect(screen.queryByTitle('Ostatnia strona')).not.toBeInTheDocument();
+        expect(screen.getByTitle('Pierwsza strona')).toBeInTheDocument();
     });
 
     it('jumps to the first and last page', () => {
@@ -92,12 +97,14 @@ describe('TransactionList pagination', () => {
         expectPage(1, 3);
     });
 
-    it('jumps to a specific page typed into the page input', () => {
+    it('lets you pick any page by clicking the current page number', () => {
         renderWithLanguage(
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        const pageInput = getPageInput();
+        const pageInput = openPageInput();
+        expect(pageInput).toHaveValue(1);
+
         fireEvent.change(pageInput, { target: { value: '2' } });
         fireEvent.blur(pageInput);
 
@@ -110,11 +117,23 @@ describe('TransactionList pagination', () => {
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        const pageInput = getPageInput();
+        const pageInput = openPageInput();
         fireEvent.change(pageInput, { target: { value: '3' } });
         fireEvent.keyDown(pageInput, { key: 'Enter' });
 
         expectPage(3, 3);
+    });
+
+    it('cancels editing on Escape without changing the page', () => {
+        renderWithLanguage(
+            <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
+        );
+
+        const pageInput = openPageInput();
+        fireEvent.change(pageInput, { target: { value: '3' } });
+        fireEvent.keyDown(pageInput, { key: 'Escape' });
+
+        expectPage(1, 3);
     });
 
     it('clamps an out-of-range page number typed into the page input', () => {
@@ -122,7 +141,7 @@ describe('TransactionList pagination', () => {
             <TransactionList transactions={makeTransactions(25)} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        const pageInput = getPageInput();
+        const pageInput = openPageInput();
         fireEvent.change(pageInput, { target: { value: '99' } });
         fireEvent.blur(pageInput);
 
@@ -164,7 +183,7 @@ describe('TransactionList pagination', () => {
             <TransactionList transactions={[]} onEdit={noop} onDelete={noop} onTransfer={noop} />
         );
 
-        expect(screen.queryByLabelText('Przejdź do strony')).not.toBeInTheDocument();
+        expect(screen.queryByTitle('Przejdź do strony')).not.toBeInTheDocument();
     });
 
     it('calls onTransfer with the selected ids from the current page only', () => {
