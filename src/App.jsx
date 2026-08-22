@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import ConfirmModal from './components/ConfirmModal';
 import InputModal from './components/InputModal';
 import ProjectSelectionModal from './components/ProjectSelectionModal';
+import SettingsPanel from './components/SettingsPanel';
 import { auth } from './services/firebase';
 import { filterTransactions, getUniqueValues } from './utils/transactionUtils';
 import { useLanguage } from './i18n/LanguageContext';
@@ -17,6 +18,7 @@ import { buildTransactionPayload } from './services/requestBuilder';
 import { useTransactions } from './hooks/useTransactions';
 import { useRates } from './hooks/useRates';
 import { useProjects } from './hooks/useProjects';
+import { useSettings } from './hooks/useSettings';
 
 function App() {
   const { language, setLanguage, t } = useLanguage();
@@ -29,8 +31,10 @@ function App() {
   const [jsonOutput, setJsonOutput] = useState('');
   const [isJsonExpanded, setIsJsonExpanded] = useState(false);
   const [lastLoadedUid, setLastLoadedUid] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { rates } = useRates();
+  const { settings, updateSetting } = useSettings();
   const {
     transactions,
     loading,
@@ -147,6 +151,13 @@ function App() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Auth onAuthChange={handleAuthChange} />
+          <button
+            className="secondary small"
+            onClick={() => setIsSettingsOpen(true)}
+            title={t('settings')}
+          >
+            ⚙️
+          </button>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
@@ -205,6 +216,7 @@ function App() {
                 existingTypes={uniqueTypes}
                 existingProjects={uniqueProjects.filter(p => p !== 'All')}
                 defaultProject={selectedProject === 'All' ? 'Budget' : selectedProject}
+                rememberLastEntry={settings.rememberLastEntry}
               />
             </div>
           )}
@@ -303,6 +315,13 @@ function App() {
         onConfirm={confirmTransfer}
         onCancel={() => setTransferIds(null)}
         confirmText={t('confirm')}
+      />
+
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        settings={settings}
+        onToggle={updateSetting}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

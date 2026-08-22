@@ -2,7 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatToDisplayDate, formatToInputDate, parseDisplayDate } from '../utils/dateUtils';
 
-const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes, existingProjects, defaultProject }) => {
+const MEMORY_KEY = 'lastTransactionMemory';
+const MEMORY_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+const getRememberedEntry = () => {
+  try {
+    const raw = localStorage.getItem(MEMORY_KEY);
+    if (!raw) return null;
+    const memory = JSON.parse(raw);
+    if (!memory || Date.now() - memory.timestamp > MEMORY_TTL_MS) return null;
+    return memory;
+  } catch {
+    return null;
+  }
+};
+
+const rememberEntry = (project, date) => {
+  try {
+    localStorage.setItem(MEMORY_KEY, JSON.stringify({ project, date, timestamp: Date.now() }));
+  } catch {
+    // Ignore storage errors (e.g. private browsing quota)
+  }
+};
+
+const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTypes, existingProjects, defaultProject, rememberLastEntry }) => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     date: '',
@@ -12,6 +35,17 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
     project: ''
   });
 
+  const buildBlankFormData = () => {
+    const remembered = rememberLastEntry ? getRememberedEntry() : null;
+    return {
+      date: remembered?.date || new Date().toISOString().split('T')[0],
+      name: '',
+      amount: '',
+      type: '',
+      project: remembered?.project || defaultProject || 'Budget'
+    };
+  };
+
   useEffect(() => {
     if (editingTransaction) {
       setFormData({
@@ -20,15 +54,11 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
         project: editingTransaction.project || 'Budget'
       });
     } else {
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        name: '',
-        amount: '',
-        type: '',
-        project: defaultProject || 'Budget'
-      });
+      setFormData(buildBlankFormData());
     }
-  }, [editingTransaction, defaultProject]);
+    // buildBlankFormData is redefined each render but only reads props already in the deps array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingTransaction, defaultProject, rememberLastEntry]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,22 +72,20 @@ const TransactionForm = ({ onSave, editingTransaction, onCancelEdit, existingTyp
     e.preventDefault();
 
     const amount = parseFloat(formData.amount);
+    const project = formData.project || 'Budget';
     onSave({
       date: formatToDisplayDate(formData.date),
       name: formData.name,
       amount: isNaN(amount) ? 0 : parseFloat(amount.toFixed(2)),
       type: formData.type,
-      project: formData.project || 'Budget'
+      project
     });
 
     if (!editingTransaction) {
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        name: '',
-        amount: '',
-        type: '',
-        project: defaultProject || 'Budget'
-      });
+      if (rememberLastEntry) {
+        rememberEntry(project, formData.date);
+      }
+      setFormData(buildBlankFormData());
     }
   };
 

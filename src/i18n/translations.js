@@ -99,7 +99,18 @@ export const translations = {
         selectTargetProject: "Wybierz projekt docelowy",
         transferSuccess: "Pomyślnie przeniesiono {{count}} transakcji do {{project}}!",
         selectAll: "Zaznacz wszystkie",
-        noProjectSelected: "Wybierz projekt"
+        noProjectSelected: "Wybierz projekt",
+        noProjectsAvailable: "Brak dostępnych projektów docelowych",
+        itemsPerPage: "Pozycji na stronę",
+        page: "Strona",
+        previous: "Poprzednia",
+        next: "Następna",
+        firstPage: "Pierwsza strona",
+        lastPage: "Ostatnia strona",
+        goToPage: "Przejdź do strony",
+        settings: "Ustawienia",
+        rememberLastEntry: "Zapamiętaj poprzedni wpis",
+        rememberLastEntryDesc: "Po dodaniu transakcji nowy formularz automatycznie wypełni projekt i datę z poprzedniego wpisu. Pamięć jest przechowywana przez 2 minuty."
     },
     en: {
         appTitle: "Cost Visualization",
@@ -201,7 +212,18 @@ export const translations = {
         selectTargetProject: "Select Target Project",
         transferSuccess: "Successfully transferred {{count}} transactions to {{project}}!",
         selectAll: "Select All",
-        noProjectSelected: "Select a project"
+        noProjectSelected: "Select a project",
+        noProjectsAvailable: "No target projects available",
+        itemsPerPage: "Items per page",
+        page: "Page",
+        previous: "Previous",
+        next: "Next",
+        firstPage: "First page",
+        lastPage: "Last page",
+        goToPage: "Go to page",
+        settings: "Settings",
+        rememberLastEntry: "Remember last entry",
+        rememberLastEntryDesc: "After adding a transaction, the new form automatically fills in the project and date from the previous entry. The memory is kept for 2 minutes."
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -303,7 +325,18 @@ export const translations = {
         selectTargetProject: "Виберіть цільовий проект",
         transferSuccess: "Успішно перенесено {{count}} транзакцій до {{project}}!",
         selectAll: "Виділити все",
-        noProjectSelected: "Виберіть проект"
+        noProjectSelected: "Виберіть проект",
+        noProjectsAvailable: "Немає доступних цільових проектів",
+        itemsPerPage: "Позицій на сторінку",
+        page: "Сторінка",
+        previous: "Попередня",
+        next: "Наступна",
+        firstPage: "Перша сторінка",
+        lastPage: "Остання сторінка",
+        goToPage: "Перейти до сторінки",
+        settings: "Налаштування",
+        rememberLastEntry: "Запам'ятати попередній запис",
+        rememberLastEntryDesc: "Після додавання транзакції нова форма автоматично заповнить проект і дату з попереднього запису. Пам'ять зберігається 2 хвилини."
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -335,7 +368,7 @@ export const translations = {
         amountHigh: "Сумма (Высокая)",
         amountLow: "Сумма (Низкая)",
         typeAZ: "Тип (А-Я)",
-        nameAZ: "Имя (А-Я)",
+        nameAZ: "Название (А-Я)",
         convertTo: "Конвертировать в...",
         edit: "Редактировать",
         delete: "Удалить",
@@ -403,8 +436,19 @@ export const translations = {
         fullAttribution: "Полная атрибуция",
         transferSelected: "Перенести выбранные",
         selectTargetProject: "Выберите целевой проект",
-        transferSuccess: "Успешно переносено {{count}} транзакций в {{project}}!",
+        transferSuccess: "Успешно перенесено {{count}} транзакций в {{project}}!",
         selectAll: "Выбрать все",
-        noProjectSelected: "Выберите проект"
+        noProjectSelected: "Выберите проект",
+        noProjectsAvailable: "Нет доступных целевых проектов",
+        itemsPerPage: "Позиций на странице",
+        page: "Страница",
+        previous: "Предыдущая",
+        next: "Следующая",
+        firstPage: "Первая страница",
+        lastPage: "Последняя страница",
+        goToPage: "Перейти на страницу",
+        settings: "Настройки",
+        rememberLastEntry: "Запомнить последнюю запись",
+        rememberLastEntryDesc: "После добавления транзакции новая форма автоматически заполнит проект и дату из предыдущей записи. Память хранится 2 минуты."
     }
 };
