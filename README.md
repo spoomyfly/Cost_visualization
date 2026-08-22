@@ -22,6 +22,7 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **JSON Export/Import**: Generate or import JSON datasets for flexibility.
 - **Project Scope**: Organize transactions by Project. Toggle between Global view (All Projects) or specific Project views.
 - **Advanced Filtering**: Search by name/type and filter by Date Range in both List and Dashboard views.
+- **Pagination**: Browse the transaction list a page at a time with a configurable page size (10/25/50/100), first/previous/next/last navigation, and jump-to-page by clicking the current page number.
 - **Bulk Actions**: Select multiple transactions to transfer them between projects in one click.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
