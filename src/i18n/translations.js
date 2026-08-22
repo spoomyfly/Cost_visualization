@@ -106,7 +106,10 @@ export const translations = {
         next: "Następna",
         firstPage: "Pierwsza strona",
         lastPage: "Ostatnia strona",
-        goToPage: "Przejdź do strony"
+        goToPage: "Przejdź do strony",
+        settings: "Ustawienia",
+        rememberLastEntry: "Zapamiętaj poprzedni wpis",
+        rememberLastEntryDesc: "Po dodaniu transakcji nowy formularz automatycznie wypełni projekt i datę z poprzedniego wpisu. Pamięć jest przechowywana przez 2 minuty."
     },
     en: {
         appTitle: "Cost Visualization",
@@ -215,7 +218,10 @@ export const translations = {
         next: "Next",
         firstPage: "First page",
         lastPage: "Last page",
-        goToPage: "Go to page"
+        goToPage: "Go to page",
+        settings: "Settings",
+        rememberLastEntry: "Remember last entry",
+        rememberLastEntryDesc: "After adding a transaction, the new form automatically fills in the project and date from the previous entry. The memory is kept for 2 minutes."
     },
     uk: {
         appTitle: "Візуалізація витрат",
@@ -324,7 +330,10 @@ export const translations = {
         next: "Наступна",
         firstPage: "Перша сторінка",
         lastPage: "Остання сторінка",
-        goToPage: "Перейти до сторінки"
+        goToPage: "Перейти до сторінки",
+        settings: "Налаштування",
+        rememberLastEntry: "Запам'ятати попередній запис",
+        rememberLastEntryDesc: "Після додавання транзакції нова форма автоматично заповнить проект і дату з попереднього запису. Пам'ять зберігається 2 хвилини."
     },
     ru: {
         appTitle: "Визуализация затрат",
@@ -433,6 +442,9 @@ export const translations = {
         next: "Следующая",
         firstPage: "Первая страница",
         lastPage: "Последняя страница",
-        goToPage: "Перейти на страницу"
+        goToPage: "Перейти на страницу",
+        settings: "Настройки",
+        rememberLastEntry: "Запомнить последнюю запись",
+        rememberLastEntryDesc: "После добавления транзакции новая форма автоматически заполнит проект и дату из предыдущей записи. Память хранится 2 минуты."
     }
 };

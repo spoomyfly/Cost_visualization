@@ -704,6 +704,42 @@ select:focus {
   padding: 0.8rem;
 }
 
+/* Settings Panel */
+.settings-panel {
+  text-align: left;
+}
+
+.settings-option {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+.settings-option-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-option-toggle .transaction-checkbox {
+  margin-right: 1.25rem;
+  flex-shrink: 0;
+}
+
+.settings-option-title {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.settings-option-desc {
+  margin: 0.6rem 0 0;
+  font-size: 0.85em;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 /* Share UI */
 .share-banner {
   background: rgba(139, 92, 246, 0.2);

@@ -24,6 +24,8 @@ A modern, React-based CRUD application for managing and visualizing money transa
 - **Advanced Filtering**: Search by name/type and filter by Date Range in both List and Dashboard views.
 - **Pagination**: Browse the transaction list a page at a time with a configurable page size (10/25/50/100), first/previous/next/last navigation, and jump-to-page by clicking the current page number.
 - **Bulk Actions**: Select multiple transactions to transfer them between projects in one click.
+- **Settings Panel** (⚙️ in the header): App-wide preferences, persisted in `localStorage`.
+    - **Remember Last Entry**: When enabled, adding a transaction pre-fills the project and date of the *next* new transaction from the one you just entered. This memory is kept for 2 minutes.
 - **Modern UI**: Glassmorphism design, responsive layout, and smooth animations.
 
 ## Architecture
@@ -108,6 +110,7 @@ Cost_visualization/
 │   │   ├── Auth.jsx             # Authentication UI
 │   │   ├── ConfirmModal.jsx     # Custom confirmation dialog
 │   │   ├── ProjectSelectionModal.jsx # Selection dialog for bulk transfers
+│   │   ├── SettingsPanel.jsx    # App settings (e.g. Remember Last Entry)
 │   │   └── Notification.jsx     # Toast notifications
 │   ├── services/        # Business logic & API calls
 │   │   ├── authService.js       # Firebase Auth logic
