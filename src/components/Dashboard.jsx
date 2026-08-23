@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import TransactionListModal from './TransactionListModal';
 import PieChart from './PieChart';
+import BarChart from './BarChart';
 import CumulativeChart from './CumulativeChart';
 import DataRetrieval from './DataRetrieval';
-
-const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+import { getColorForName } from '../utils/chartColors';
 
 const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }) => {
     const { t } = useLanguage();
@@ -54,6 +54,7 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
                 avgCheck: 0,
                 totalCount: 0,
                 sortedGroups: [],
+                sortedByType: [],
                 sortedDaily: [],
                 topExpenses: [],
                 cumulativeData: []
@@ -76,6 +77,27 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
         });
 
         const sortedGroups = Object.entries(groupMap)
+            .map(([name, data]) => ({
+                name,
+                value: data.total,
+                count: data.count,
+                items: data.items
+            }))
+            .sort((a, b) => b.value - a.value);
+
+        // Grouping stats by Type (always by type, regardless of project scope)
+        const typeMap = {};
+        filteredTransactions.forEach(item => {
+            const key = item.type || t('type');
+            if (!typeMap[key]) {
+                typeMap[key] = { total: 0, count: 0, items: [] };
+            }
+            typeMap[key].total += item.amount;
+            typeMap[key].count += 1;
+            typeMap[key].items.push(item);
+        });
+
+        const sortedByType = Object.entries(typeMap)
             .map(([name, data]) => ({
                 name,
                 value: data.total,
@@ -119,6 +141,7 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
             avgCheck,
             totalCount: filteredTransactions.length,
             sortedGroups,
+            sortedByType,
             sortedDaily,
             topExpenses,
             cumulativeData
@@ -204,7 +227,7 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
                         {stats.sortedGroups.map((item, i) => (
                             <div key={i} className="stat-item" onClick={() => handleOpenModal(item.name, item.items)} style={{ cursor: 'pointer' }}>
                                 <div className="stat-name-group">
-                                    <div className="stat-color-dot" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                                    <div className="stat-color-dot" style={{ backgroundColor: getColorForName(item.name) }}></div>
                                     <span>{item.name}</span>
                                 </div>
                                 <div className="stat-amount-group">
@@ -214,6 +237,14 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
                             </div>
                         ))}
                     </div>
+                </div>
+
+                <div className="card">
+                    <h3>📊 {t('expensesByType')}</h3>
+                    <BarChart
+                        data={stats.sortedByType}
+                        onBarClick={(name, items) => handleOpenModal(name, items)}
+                    />
                 </div>
 
                 <div className="card">

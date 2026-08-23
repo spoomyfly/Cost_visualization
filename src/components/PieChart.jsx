@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+import { getColorForName } from '../utils/chartColors';
 
 const PieChart = ({ sortedTypes, totalSpent, onSliceClick }) => {
     const { t } = useLanguage();
@@ -17,7 +16,7 @@ const PieChart = ({ sortedTypes, totalSpent, onSliceClick }) => {
     let currentAngle = 0;
     const slices = [];
 
-    sortedTypes.forEach((item, i) => {
+    sortedTypes.forEach((item) => {
         const percentage = (item.value / totalSpent) * 100;
         const angle = (item.value / totalSpent) * 360;
         const endAngle = currentAngle + angle;
@@ -45,7 +44,7 @@ const PieChart = ({ sortedTypes, totalSpent, onSliceClick }) => {
 
         slices.push({
             path,
-            color: COLORS[i % COLORS.length],
+            color: getColorForName(item.name),
             labelX,
             labelY,
             percentage: percentage.toFixed(0),
