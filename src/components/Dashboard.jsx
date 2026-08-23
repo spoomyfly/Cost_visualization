@@ -5,8 +5,7 @@ import PieChart from './PieChart';
 import BarChart from './BarChart';
 import CumulativeChart from './CumulativeChart';
 import DataRetrieval from './DataRetrieval';
-
-const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+import { getColorForName } from '../utils/chartColors';
 
 const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }) => {
     const { t } = useLanguage();
@@ -228,7 +227,7 @@ const Dashboard = ({ transactions, onEdit, onDelete, selectedProject, onImport }
                         {stats.sortedGroups.map((item, i) => (
                             <div key={i} className="stat-item" onClick={() => handleOpenModal(item.name, item.items)} style={{ cursor: 'pointer' }}>
                                 <div className="stat-name-group">
-                                    <div className="stat-color-dot" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                                    <div className="stat-color-dot" style={{ backgroundColor: getColorForName(item.name) }}></div>
                                     <span>{item.name}</span>
                                 </div>
                                 <div className="stat-amount-group">

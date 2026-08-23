@@ -38,6 +38,21 @@ describe('Dashboard Component', () => {
         expect(screen.getAllByText(/Transport/i).length).toBeGreaterThan(0);
     });
 
+    it('uses the same color for a given type in both the pie chart and the bar chart', () => {
+        const { container } = renderWithLanguage(<Dashboard transactions={mockTransactions} />);
+
+        const pieSlice = Array.from(container.querySelectorAll('.pie-slice')).find(
+            (el) => el.querySelector('title')?.textContent.includes('Food')
+        );
+        const barRect = Array.from(container.querySelectorAll('rect')).find(
+            (el) => el.querySelector('title')?.textContent.includes('Food')
+        );
+
+        expect(pieSlice).toBeTruthy();
+        expect(barRect).toBeTruthy();
+        expect(pieSlice.getAttribute('fill')).toBe(barRect.getAttribute('fill'));
+    });
+
     it('renders top expenses list', () => {
         renderWithLanguage(<Dashboard transactions={mockTransactions} />);
         expect(screen.getByText(/Największe wydatki/i)).toBeInTheDocument();

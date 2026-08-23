@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+import { getColorForName } from '../utils/chartColors';
 
 const BarChart = ({ data, onBarClick }) => {
     const { t } = useLanguage();
@@ -26,7 +25,7 @@ const BarChart = ({ data, onBarClick }) => {
         const barHeight = (item.value / niceMax) * chartHeight;
         const x = padding.left + i * barSlot + (barSlot - barWidth) / 2;
         const y = padding.top + chartHeight - barHeight;
-        return { ...item, x, y, barHeight, color: COLORS[i % COLORS.length] };
+        return { ...item, x, y, barHeight, color: getColorForName(item.name) };
     });
 
     return (
