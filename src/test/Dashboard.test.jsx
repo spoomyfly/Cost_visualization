@@ -32,8 +32,7 @@ describe('Dashboard Component', () => {
 
     it('renders distribution by type', () => {
         renderWithLanguage(<Dashboard transactions={mockTransactions} />);
-        // Shown twice: once as the pie chart title, once as the new bar chart title
-        expect(screen.getAllByText(/Wydatki według typu/i).length).toBe(2);
+        expect(screen.getByText(/Wydatki według typu/i)).toBeInTheDocument();
         expect(screen.getAllByText(/Food/i).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/Transport/i).length).toBeGreaterThan(0);
     });
