@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import Dashboard from '../components/Dashboard';
@@ -42,5 +42,50 @@ describe('Dashboard Component', () => {
         renderWithLanguage(<Dashboard transactions={mockTransactions} />);
         expect(screen.getByText(/Największe wydatki/i)).toBeInTheDocument();
         expect(screen.getByText(/Lunch/i)).toBeInTheDocument();
+    });
+
+    describe('bar chart by type', () => {
+        const multiProjectTransactions = [
+            { id: 1, date: '01.01.24', name: 'Coffee', amount: 15, type: 'Food', project: 'Alpha' },
+            { id: 2, date: '02.01.24', name: 'Snacks', amount: 25, type: 'Food', project: 'Beta' },
+            { id: 3, date: '03.01.24', name: 'Bus', amount: 4, type: 'Transport', project: 'Alpha' },
+        ];
+
+        it('keeps grouping by type even in the "All Projects" view, where the pie chart switches to grouping by project', () => {
+            renderWithLanguage(<Dashboard transactions={multiProjectTransactions} selectedProject="All" />);
+
+            // Pie chart switches to grouping by project in the "All Projects" view
+            expect(screen.getByText(/Wydatki według projektu/i)).toBeInTheDocument();
+            expect(screen.getAllByText(/Alpha/i).length).toBeGreaterThan(0);
+            expect(screen.getAllByText(/Beta/i).length).toBeGreaterThan(0);
+
+            // The new bar chart still breaks down by type, merging both projects' "Food" spend
+            expect(screen.getByText(/Wydatki według typu/i)).toBeInTheDocument();
+        });
+
+        it('merges same-type spend across projects into a single bar', () => {
+            const { container } = renderWithLanguage(
+                <Dashboard transactions={multiProjectTransactions} selectedProject="All" />
+            );
+
+            // Food (Alpha) + Food (Beta) = one "Food" bar, plus one "Transport" bar = 2 bars total
+            const barChartTitles = Array.from(container.querySelectorAll('rect title')).map(t => t.textContent);
+            expect(barChartTitles.length).toBe(2);
+            expect(barChartTitles.some(t => t.includes('Food') && t.includes('40'))).toBe(true);
+        });
+
+        it('opens the transaction list modal with all items for a type when a bar is clicked', () => {
+            const { container } = renderWithLanguage(
+                <Dashboard transactions={multiProjectTransactions} selectedProject="All" />
+            );
+
+            const barGroups = container.querySelectorAll('g');
+            fireEvent.click(barGroups[0]);
+
+            // The clicked bar's modal should list its underlying transactions
+            const modal = container.querySelector('.modal-card');
+            expect(modal).not.toBeNull();
+            expect(modal.textContent).toContain('Coffee');
+        });
     });
 });
