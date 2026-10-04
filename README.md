@@ -91,11 +91,25 @@ The output will be in the `dist` folder.
 
 This project is configured for deployment to GitHub Pages.
 
-1.  **Build and Deploy**:
-    ```bash
-    npm run deploy
-    ```
-    This command builds the project and pushes the `dist` folder to the `gh-pages` branch.
+**Automatic (recommended)**: `.github/workflows/deploy.yml` builds and deploys on every push to `main` (and via manual `workflow_dispatch`). It runs the test suite, then builds with the Firebase config pulled from **repository secrets**, then publishes `dist/` to the `gh-pages` branch. The following secrets must be set under *Settings → Secrets and variables → Actions*:
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+VITE_FIREBASE_DATABASE_URL
+VITE_GOOGLE_SHEETS_API_KEY
+```
+
+**Manual**: you can still deploy locally with:
+```bash
+npm run deploy
+```
+This builds the project and pushes `dist/` to the `gh-pages` branch — but only do this from a machine with a real `.env` (see `.env.example`) populated with the values above. Running it without `.env` produces a build with no Firebase config, which silently breaks Google Sign-In and Cloud Sync (Firebase auth stays uninitialized rather than erroring loudly). Prefer letting the GitHub Action handle deploys.
 
 ## Project Structure
 
